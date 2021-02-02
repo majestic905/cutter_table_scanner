@@ -1,66 +1,43 @@
-import {useState, useEffect} from "react";
-import logo from './logo.svg';
-import './App.css';
+import {useState, useEffect, useCallback} from "react";
+
+import Files from "./components/files";
+import Images from "./components/images";
+import Log from "./components/log";
+import Divider from "./components/divider";
+
+import './App.scss';
+
+
+function generateMessage(text) {
+
+}
 
 
 function App() {
-    const [currentTime, setCurrentTime] = useState(0);
+    const [logItems, setLogItems] = useState([]);
+
+    const addLogItem = useCallback((message) => {
+        const item = {timestamp: new Date(), message};
+        setLogItems(items => [item, ...items]);
+    }, [setLogItems]);
 
     useEffect(() => {
-    fetch('/api/time').then(res => res.json()).then(data => {
-      setCurrentTime(data.time);
-    });
+        addLogItem("App initialized");
     }, []);
+
 
     return (
         <main className="container">
             <div className="columns">
-                <div className="column">
-                  File tree here
-                </div>
+                <Files />
 
-                <div className="divider-vert"/>
+                <Divider />
 
-                <div className="column" id="column-images">
-                    <div className="columns" id="container-images">
-                        <div className="column col-6">
-                            <figure className="figure">
-                                <img className="img-responsive" src={logo} alt="Image #1"/>
-                                <figcaption className="figure-caption text-center">Image #1</figcaption>
-                            </figure>
-                        </div>
-                        <div className="column col-6">
-                            <figure className="figure">
-                                <img className="img-responsive" src={logo} alt="Image #2"/>
-                                <figcaption className="figure-caption text-center">Image #2</figcaption>
-                            </figure>
-                        </div>
-                        <div className="column col-6">
-                            <figure className="figure">
-                                <img className="img-responsive" src={logo} alt="Image #3"/>
-                                <figcaption className="figure-caption text-center">Image #3</figcaption>
-                            </figure>
-                        </div>
-                        <div className="column col-6">
-                            <figure className="figure">
-                                <img className="img-responsive" src={logo} alt="Image #4"/>
-                                <figcaption className="figure-caption text-center">Image #4</figcaption>
-                            </figure>
-                        </div>
-                    </div>
+                <Images />
 
-                    <hr/>
+                <Divider />
 
-                    {/*<figure className="figure">*/}
-                    {/*    <img className="img-responsive" src='/logo512.png' alt="Image #4"/>*/}
-                    {/*</figure>*/}
-                </div>
-
-                <div className="divider-vert"/>
-
-                <div className="column" id="column-textarea">
-                  <textarea className="form-input" readOnly/>
-                </div>
+                <Log logItems={logItems}/>
             </div>
         </main>
     );
