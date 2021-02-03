@@ -1,15 +1,8 @@
-import time
-import os
 from http import HTTPStatus as status
 from flask import Flask
-from scans import get_scans_directories_list, delete_scans_directories, create_example_scans
+from scans import get_scans_directories_list, delete_scans_directories, perform_scan
 
 app = Flask(__name__, static_folder='../client/build', static_url_path='/')
-
-
-@app.route('/')
-def index():
-    return app.send_static_file('index.html')
 
 
 @app.route('/api/scans', methods=['GET'])
@@ -24,6 +17,11 @@ def delete_scans():
 
 
 @app.route('/api/scans', methods=['POST'])
-def create_scans():
-    create_example_scans()
+def post_scans():
+    perform_scan()
     return '', status.OK
+
+
+@app.route('/', methods=['GET'])
+def index():
+    return app.send_static_file('index.html')

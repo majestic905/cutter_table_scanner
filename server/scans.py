@@ -26,7 +26,7 @@ def get_scans_directories_list():
     return directories
 
 
-def create_example_scans():
+def perform_scan():
     def random_date(start, end):
         """
         This function will return a random datetime between two datetime
@@ -37,14 +37,12 @@ def create_example_scans():
         random_second = randrange(int_delta)
         return start + timedelta(seconds=random_second)
 
-    start = datetime(2018, 1, 1, 0, 0, 0)
-    end = datetime.now()
-    for i in range(15):
-        dt = random_date(start, end)
-        ts = dt.timestamp()
-        name = str(int(ts))
-        path = os.path.join(SCANS_DIRECTORY_PATH, name)
-        os.mkdir(path)
+    start, end = datetime(2018, 1, 1, 0, 0, 0), datetime.now()
+    dt = random_date(start, end)
+    ts = dt.timestamp()
+    name = str(int(ts))
+    path = os.path.join(SCANS_DIRECTORY_PATH, name)
+    os.mkdir(path)
 
 
 def delete_scans_directories():

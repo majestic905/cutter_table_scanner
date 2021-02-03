@@ -8,36 +8,54 @@ import Divider from "./components/divider";
 import './App.scss';
 
 
-function generateMessage(text) {
-
-}
-
 
 function App() {
     const [logItems, setLogItems] = useState([]);
 
     const addLogItem = useCallback((message) => {
-        const item = {timestamp: new Date(), message};
-        setLogItems(items => [item, ...items]);
+        setLogItems(items => {
+            const item = {id: items.length + 1, timestamp: new Date(), message};
+            return [item, ...items];
+        });
     }, [setLogItems]);
 
-    useEffect(() => {
-        addLogItem("App initialized");
-    }, []);
+    useEffect(() => { for (let i = 0; i < 30; ++i) addLogItem("App initialized"); }, []);
 
     // ------------
 
+    const [scans, setScans] = useState(null);
     const [selectedScan, setSelectedScan] = useState(null);
+
+    const loadScans = useCallback(() => {
+        setSelectedScan(null);
+
+        fetch('/api/scans')
+            .then(res => res.json())
+            .then(data => setScans(data.scans))
+            .catch(error => console.error(error));
+    }, [setScans, setSelectedScan]);
+
+    useEffect(loadScans, []);
+
+    // ------------
 
 
     return (
-        <main className="container">
-            <div className="columns">
-                <ScansList size={3} selectedScan={selectedScan} selectScan={setSelectedScan} />
+        <main className="container 100vh">
+            <div className="columns 100vh">
+                <ScansList scans={scans} loadScans={loadScans}
+                           selectedScan={selectedScan} selectScan={setSelectedScan}
+                />
 
-                <Images size={5} />
+                <Divider vertical />
 
-                <Log size={4} logItems={logItems}/>
+                <div className="column 100vh" id="column-right">
+                    <Images loadScans={loadScans} />
+
+                    <Divider />
+
+                    <Log logItems={logItems}/>
+                </div>
             </div>
         </main>
     );

@@ -1,46 +1,50 @@
+import {useCallback} from "react";
 import logo from "../logo.svg";
 
 
-const Images = ({size}) => {
-    return (
-        <div className={`column col-${size} no-scrollbar`} id="column-images">
-            <h5>Изображения</h5>
+const ScanButton = ({onCreate}) => {
+    const doCreate = useCallback(() => {
+        fetch('/api/scans', {method: 'POST'})
+            .then(onCreate)
+            .catch(error => console.error(error));
+    }, [onCreate]);
 
-            <div className="columns" id="container-images">
-                <div className="column col-6">
-                    <figure className="figure">
-                        <img className="img-responsive" src={logo} alt="Image #1"/>
-                        <figcaption className="figure-caption text-center">Image #1</figcaption>
-                    </figure>
+    return (
+        <span className='header-button' onClick={doCreate}>
+            Сканировать
+        </span>
+    )
+}
+
+
+const Images = ({loadScans}) => {
+    return (
+        <div className="no-scrollbar" id="column-images">
+            <h5 className="d-inline">Изображения</h5>
+            <ScanButton onCreate={loadScans}/>
+
+            <div className="columns">
+                <div className="column col-5">
+                    <div className="columns">
+                        <div className="column col-6">
+                            <img className="img-responsive" src={logo} alt="Image #1"/>
+                        </div>
+                        <div className="column col-6">
+                            <img className="img-responsive" src={logo} alt="Image #2"/>
+                        </div>
+                        <div className="column col-6">
+                            <img className="img-responsive" src={logo} alt="Image #3"/>
+                        </div>
+                        <div className="column col-6">
+                            <img className="img-responsive" src={logo} alt="Image #4"/>
+                        </div>
+                    </div>
                 </div>
-                <div className="column col-6">
-                    <figure className="figure">
-                        <img className="img-responsive" src={logo} alt="Image #2"/>
-                        <figcaption className="figure-caption text-center">Image #2</figcaption>
-                    </figure>
-                </div>
-                <div className="column col-6">
-                    <figure className="figure">
-                        <img className="img-responsive" src={logo} alt="Image #3"/>
-                        <figcaption className="figure-caption text-center">Image #3</figcaption>
-                    </figure>
-                </div>
-                <div className="column col-6">
-                    <figure className="figure">
-                        <img className="img-responsive" src={logo} alt="Image #4"/>
-                        <figcaption className="figure-caption text-center">Image #4</figcaption>
-                    </figure>
+
+                <div className="column col-7">
+                    <img className="img-responsive" src='/logo512.png' alt="Image #4"/>
                 </div>
             </div>
-
-            <hr/>
-
-            <figure className="figure">
-                <img className="img-responsive" src='/logo512.png' alt="Image #4"/>
-                <figcaption className="figure-caption text-center">
-                    Resulting image
-                </figcaption>
-            </figure>
         </div>
     )
 }

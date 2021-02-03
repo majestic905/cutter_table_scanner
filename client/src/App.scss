@@ -7,18 +7,37 @@ main.container {
   height: 100vh;
 }
 
-#column-log, #column-file-tree, #column-images {
+#column-file-tree, #column-second {
   overflow-y: scroll;
   height: calc(100vh - 2rem);
-  padding-left: 1rem;
-  padding-right: 1rem;
+}
 
-  &:not(:last-child) {
-    border-right: 1px solid #bcc3ce;
+#column-images {
+  height: 70vh;
+  max-height: 70vh;
+  overflow-y: scroll;
+
+  #container-images {
+    max-width: 300px;
+  }
+  #container-images img {
+    border: 1px dashed black;
   }
 }
 
-#column-file-tree #button-delete {
+#column-log {
+  height: 20vh;
+  max-height: 20vh;
+  overflow-y: scroll;
+
+  ul {
+    list-style: none;
+    margin-left: 0;
+  }
+}
+
+
+.header-button {
   background: #303742;
   border-radius: .1rem;
   color: #fff;
@@ -27,25 +46,8 @@ main.container {
   margin-left: 1.5rem;
   font-family: monospace;
   cursor: pointer;
-  float: right;
-  //position: relative;
-  //bottom: 1px;
-  //left: 40px;
 }
 
-#container-images figure {
-  border: 1px dashed black;
-}
-
-#column-log {
-  ul {
-    list-style: square;
-  }
-  .log-timestamp {
-    position: relative;
-    left: -0.2rem;
-  }
-};
 
 .tree {
   img {
