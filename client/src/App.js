@@ -1,6 +1,6 @@
 import {useState, useEffect, useCallback} from "react";
 
-import Files from "./components/files";
+import ScansList from "./components/scans_list";
 import Images from "./components/images";
 import Log from "./components/log";
 import Divider from "./components/divider";
@@ -25,19 +25,19 @@ function App() {
         addLogItem("App initialized");
     }, []);
 
+    // ------------
+
+    const [selectedScan, setSelectedScan] = useState(null);
+
 
     return (
         <main className="container">
             <div className="columns">
-                <Files />
+                <ScansList size={3} selectedScan={selectedScan} selectScan={setSelectedScan} />
 
-                <Divider />
+                <Images size={5} />
 
-                <Images />
-
-                <Divider />
-
-                <Log logItems={logItems}/>
+                <Log size={4} logItems={logItems}/>
             </div>
         </main>
     );

@@ -1,8 +1,9 @@
 import logo from "../logo.svg";
 
-function Images() {
+
+const Images = ({size}) => {
     return (
-        <div className="column no-scrollbar" id="column-images">
+        <div className={`column col-${size} no-scrollbar`} id="column-images">
             <h5>Изображения</h5>
 
             <div className="columns" id="container-images">

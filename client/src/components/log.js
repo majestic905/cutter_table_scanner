@@ -8,9 +8,9 @@ const LogItem = ({timestamp, message}) => {
 };
 
 
-const Log = ({logItems}) => {
+const Log = ({size, logItems}) => {
     return (
-        <div className="column no-scrollbar" id="column-log">
+        <div className={`column col-${size} no-scrollbar`} id="column-log">
             <h5>Лог</h5>
 
             <ul className="text-small">
