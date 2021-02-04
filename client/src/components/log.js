@@ -9,10 +9,23 @@ const LogItem = ({timestamp, message}) => {
 };
 
 
-const Log = ({logItems}) => {
+const ClearButton = ({doClear}) => {
     return (
-        <div className="no-scrollbar" id="column-log">
-            <h5>Лог</h5>
+        <span className='header-button' onClick={doClear}>
+            Очистить
+        </span>
+    )
+}
+
+
+const Log = ({logItems, clearLog}) => {
+    return (
+        <div id="log">
+            <header>
+                <h5 className="d-inline">Лог</h5>
+                <ClearButton doClear={clearLog} />
+            </header>
+
             <ul className="text-small">
                 {logItems.map(item => <LogItem key={item.id} timestamp={item.timestamp} message={item.message} />)}
             </ul>

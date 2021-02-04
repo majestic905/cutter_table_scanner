@@ -42,12 +42,14 @@ const ScansList = ({scans, loadScans, selectedScan, selectScan}) => {
         return null;
 
     return (
-        <div className="column col-2 no-scrollbar tree" id="column-file-tree">
-            <h5 className="d-inline">Файлы</h5>
-            <DeleteButton onDelete={loadScans} />
+        <div className="tree" id="scans-list">
+            <header>
+                <h5 className="d-inline">Файлы</h5>
+                <DeleteButton onDelete={loadScans} />
+            </header>
 
             <ul>
-                {scans.map(item => <Item name={item.name}
+                {scans.map(item => <Item key={item.name} name={item.name}
                                          createdAt={item.createdAt}
                                          isSelected={item === selectedScan}
                                          doSelect={doSelect}

@@ -1,11 +1,11 @@
 import {useState, useEffect, useCallback} from "react";
 
 import ScansList from "./components/scans_list";
-import Images from "./components/images";
+import ScanResult from "./components/scan_result";
 import Log from "./components/log";
 import Divider from "./components/divider";
 
-import './App.scss';
+import './app.scss';
 
 
 
@@ -19,7 +19,9 @@ function App() {
         });
     }, [setLogItems]);
 
-    useEffect(() => { for (let i = 0; i < 30; ++i) addLogItem("App initialized"); }, []);
+    const clearLog = useCallback(() => { setLogItems([]) }, []);
+
+    useEffect(() => { for (let i = 0; i < 10; ++i) addLogItem("App initialized"); }, []);
 
     // ------------
 
@@ -31,7 +33,11 @@ function App() {
 
         fetch('/api/scans')
             .then(res => res.json())
-            .then(data => setScans(data.scans))
+            .then(data => {
+                setScans(data.scans);
+                if (data.scans.length > 0)
+                    setSelectedScan(data.scans[0]);
+            })
             .catch(error => console.error(error));
     }, [setScans, setSelectedScan]);
 
@@ -39,22 +45,25 @@ function App() {
 
     // ------------
 
+    console.log(scans);
 
     return (
-        <main className="container 100vh">
-            <div className="columns 100vh">
-                <ScansList scans={scans} loadScans={loadScans}
+        <main className="container">
+            <div className="columns">
+                <div className="column col-3" id="column-left">
+                    <ScansList scans={scans} loadScans={loadScans}
                            selectedScan={selectedScan} selectScan={setSelectedScan}
-                />
-
-                <Divider vertical />
-
-                <div className="column 100vh" id="column-right">
-                    <Images loadScans={loadScans} />
+                    />
 
                     <Divider />
 
-                    <Log logItems={logItems}/>
+                    <Log logItems={logItems} clearLog={clearLog}/>
+                </div>
+
+                <Divider vertical />
+
+                <div className="column" id="column-right">
+                    <ScanResult loadScans={loadScans} selectedScan={selectedScan} />
                 </div>
             </div>
         </main>
