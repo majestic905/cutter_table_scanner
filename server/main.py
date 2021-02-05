@@ -1,7 +1,9 @@
 import os.path
+import repository
+import scanner
+
 from http import HTTPStatus as status
 from flask import Flask, send_from_directory, request
-from scans import get_scans_directories_list, delete_scans_directories, perform_scan, SCANS_DIRECTORY_PATH
 
 app = Flask(__name__, static_folder='../client/build', static_url_path='/')
 
@@ -9,29 +11,32 @@ app = Flask(__name__, static_folder='../client/build', static_url_path='/')
 
 @app.route('/api/scans', methods=['GET'])
 def get_scans():
-    return {'scans': get_scans_directories_list()}
+    return {'scans': repository.index()}
 
 
 @app.route('/api/scans/<name>', methods=['GET'])
 def get_scan(name):
-    directory = os.path.join(SCANS_DIRECTORY_PATH, name)
+    file_path = repository.get(name)
+
+    directory = os.path.dirname(file_path)
     kwargs = {
-        'filename': 'result.jpg',
+        'filename': os.path.basename(file_path),
         'as_attachment': bool(request.args.get('as_attachment')),
         'attachment_filename': f'{name}.jpg'
     }
+
     return send_from_directory(directory, **kwargs)
 
 
 @app.route('/api/scans', methods=['POST'])
 def post_scans():
-    perform_scan()
+    scanner.perform_scan()
     return '', status.OK
 
 
 @app.route('/api/scans', methods=['DELETE'])
 def delete_scans():
-    delete_scans_directories()
+    repository.clear()
     return '', status.NO_CONTENT
 
 
