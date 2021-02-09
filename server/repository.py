@@ -36,7 +36,7 @@ def get(scan_id):
     return file_path
 
 
-def create():
+def create_item():
     ts = datetime.now().timestamp()
     scan_id = str(int(ts))
     path = os.path.join(ROOT_PATH, scan_id)
