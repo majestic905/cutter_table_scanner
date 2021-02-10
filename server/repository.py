@@ -1,22 +1,14 @@
 import os
 import shutil
-from enum import Enum
+import cv2
 from datetime import datetime
+from storage import ScanFile
 
 
 ROOT_PATH = os.path.join(os.path.dirname(__file__), 'scans')
 
 if not os.path.exists(ROOT_PATH):
     os.mkdir(ROOT_PATH)
-
-
-class File(Enum):
-    LEFT_UPPER = 'left_upper.jpg'
-    RIGHT_UPPER = 'right_upper.jpg'
-    RIGHT_LOWER = 'right_lower.jpg'
-    LEFT_LOWER = 'left_lower.jpg'
-    RESULT = 'result.jpg'
-
 
 def index():
     return [
@@ -28,7 +20,7 @@ def index():
 
 
 def get(scan_id):
-    file_path = os.path.join(ROOT_PATH, scan_id, File.RESULT.value)
+    file_path = os.path.join(ROOT_PATH, scan_id, ScanFile.RESULT.value)
 
     if not os.path.exists(file_path):
         raise FileNotFoundError
@@ -36,19 +28,19 @@ def get(scan_id):
     return file_path
 
 
-def create_item():
-    ts = datetime.now().timestamp()
-    scan_id = str(int(ts))
+def put_cv2_image(scan_id, file_name, image):
+    file_path = os.path.join(ROOT_PATH, scan_id, file_name)
+    cv2.imwrite(file_path, image)
+
+
+def put_copy(scan_id, file_name, src_file_path):
+    dst_file_path = os.path.join(ROOT_PATH, scan_id, file_name)
+    shutil.copy(src_file_path, dst_file_path)
+
+
+def create_storage(scan_id: str):
     path = os.path.join(ROOT_PATH, scan_id)
     os.mkdir(path)
-
-    return {
-        File.LEFT_UPPER: os.path.join(path, File.LEFT_UPPER.value),
-        File.RIGHT_UPPER: os.path.join(path, File.RIGHT_UPPER.value),
-        File.RIGHT_LOWER: os.path.join(path, File.RIGHT_LOWER.value),
-        File.LEFT_LOWER: os.path.join(path, File.LEFT_LOWER.value),
-        File.RESULT: os.path.join(path, File.RESULT.value),
-    }
 
 
 def clear():

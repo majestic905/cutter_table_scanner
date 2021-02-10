@@ -1,25 +1,32 @@
 import os.path
 import shutil
-import repository
-from camera import Camera
-from repository import File
-from improc import process_images
+from scan import Scan
+from camera import Camera, CameraPosition
+from storage import ScanFile
 
 
 cameras = {
-    File.LEFT_UPPER: Camera('left_upper'),
-    File.RIGHT_UPPER: Camera('right_upper'),
-    File.RIGHT_LOWER: Camera('right_lower'),
-    File.LEFT_LOWER: Camera('left_lower'),
+    CameraPosition.LU: Camera(CameraPosition.LU.value),
+    CameraPosition.RU: Camera(CameraPosition.RU.value),
+    CameraPosition.RL: Camera(CameraPosition.RL.value),
+    CameraPosition.LL: Camera(CameraPosition.LL.value),
 }
 
 
-def capture_photos(file_paths):
-    for file, camera in cameras.items():
-        camera.capture_to(file_paths[file])
+def process_images(file_paths):
+    dst_file_path = file_paths[ScanFile.RESULT]
+
+    dst_file_name = os.path.basename(dst_file_path)
+    dst_dir_path = os.path.dirname(dst_file_path)
+
+    src_file_path = os.path.join(dst_dir_path, '..', '..', 'eggs', 'sample_scan', dst_file_name)
+    shutil.copy(src_file_path, dst_file_path)
 
 
 def perform_scan():
-    file_paths = repository.create_item()
-    capture_photos(file_paths)
-    process_images(file_paths)
+    scan = Scan()
+
+    for camera_position, camera in cameras.items():
+        scan.capture_original(camera, camera_position)
+
+    process_images()
