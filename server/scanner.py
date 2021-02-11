@@ -1,32 +1,21 @@
-import os.path
-import shutil
 from scan import Scan
 from camera import Camera, CameraPosition
-from storage import ScanFile
+from processing import undistort, project, compose
 
 
 cameras = {
-    CameraPosition.LU: Camera(CameraPosition.LU.value),
-    CameraPosition.RU: Camera(CameraPosition.RU.value),
-    CameraPosition.RL: Camera(CameraPosition.RL.value),
-    CameraPosition.LL: Camera(CameraPosition.LL.value),
+    CameraPosition.RU: Camera('/dev/usb1', 'Canon', 'Canon Powershot S50'),
+    CameraPosition.RL: Camera('/dev/usb2', 'Canon', 'Canon Powershot S50'),
+    CameraPosition.LL: Camera('/dev/usb3', 'Nikon', 'Nikon Coolpix S9400'),
+    CameraPosition.LU: Camera('/dev/usb4', 'Canon', 'Canon Powershot S50'),
 }
-
-
-def process_images(file_paths):
-    dst_file_path = file_paths[ScanFile.RESULT]
-
-    dst_file_name = os.path.basename(dst_file_path)
-    dst_dir_path = os.path.dirname(dst_file_path)
-
-    src_file_path = os.path.join(dst_dir_path, '..', '..', 'eggs', 'sample_scan', dst_file_name)
-    shutil.copy(src_file_path, dst_file_path)
 
 
 def perform_scan():
     scan = Scan()
+    # initialize logger connected to scan?
 
-    for camera_position, camera in cameras.items():
-        scan.capture_original(camera, camera_position)
-
-    process_images()
+    scan.capture_photos(cameras)
+    scan.build_undistorted_images(undistort, cameras)
+    scan.build_projected_images(project, cameras)
+    scan.build_result_image(compose)
