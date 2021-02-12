@@ -1,25 +1,26 @@
 import numpy as np
-from camera import CameraPosition
+from camera import Camera, CameraPosition
+from scanner import ImagesType
 
 
-def undistort(original_cv2_image, camera):
+def undistort(image: np.ndarray, camera: Camera):
     # use camera methods, which use lensfunpy methods or opencv methods
-    return original_cv2_image
+    return image
 
 
-def project(undistorted_cv2_image, camera):
-    return undistorted_cv2_image
+def project(image: np.ndarray, camera: Camera):
+    return image
 
 
-def compose(projected_cv2_images):
-    lu = projected_cv2_images[CameraPosition.LU]
-    ru = projected_cv2_images[CameraPosition.RU]
-    rl = projected_cv2_images[CameraPosition.RL]
-    ll = projected_cv2_images[CameraPosition.LL]
+def compose(images: ImagesType):
+    left_upper = images[CameraPosition.LU]
+    right_upper = images[CameraPosition.RU]
+    right_lower = images[CameraPosition.RL]
+    left_lower = images[CameraPosition.LL]
 
     # horizontally
-    upper = np.concatenate((lu, ru), axis=1)
-    lower = np.concatenate((ll, rl), axis=1)
+    upper = np.concatenate((left_upper, right_upper), axis=1)
+    lower = np.concatenate((left_lower, right_lower), axis=1)
 
     # vertically
     return np.concatenate((upper, lower), axis=0)
