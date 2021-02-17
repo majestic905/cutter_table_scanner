@@ -1,13 +1,5 @@
 import os.path
 import shutil
-from enum import Enum
-
-
-class CameraPosition(Enum):
-    LU = 'left_upper'
-    RU = 'right_upper'
-    RL = 'right_lower'
-    LL = 'left_lower'
 
 
 class Camera:
@@ -32,3 +24,6 @@ class Camera:
     def capture_to_path(self, path):
         src_path = os.path.join(__file__, '..', 'eggs', 'sample_scan', os.path.basename(path))
         shutil.copy(src_path, path)
+
+    def __repr__(self):
+        return f'Camera({self.usb}, {self.manufacturer}, {self.model})'

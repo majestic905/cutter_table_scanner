@@ -1,7 +1,7 @@
 import os.path
 import storage
-import scanner
-from scan import ScanFile
+from scanner import Scanner
+from enums import ScanFile
 
 from http import HTTPStatus as status
 from flask import Flask, send_from_directory, request
@@ -9,10 +9,9 @@ from flask import Flask, send_from_directory, request
 app = Flask(__name__, static_folder='../client/build', static_url_path='/')
 
 
-
 @app.route('/api/scans', methods=['GET'])
 def get_scans():
-    return storage.scans_list()
+    return {'scans': storage.scans_list()}
 
 
 @app.route('/api/scans/<scan_id>', methods=['GET'])
@@ -31,6 +30,7 @@ def get_scan(scan_id):
 
 @app.route('/api/scans', methods=['POST'])
 def post_scans():
+    scanner = Scanner()
     scanner.perform_scan()
     return '', status.OK
 
@@ -39,6 +39,20 @@ def post_scans():
 def delete_scans():
     storage.clear_scans_dir()
     return '', status.NO_CONTENT
+
+
+@app.route('/api/cameras/projection_points/calibrate', methods=['POST'])
+def camera_projection_points_calibrate():
+    scanner = Scanner()
+    scanner.perform_calibration()
+    return '', status.OK
+
+
+# @app.route('/api/cameras/projection_points', methods=['POST'])
+# def camera_projection_points_set():
+#     scanner = Scanner()
+#     scanner.perform_calibration()
+#     return '', status.OK
 
 
 @app.route('/', methods=['GET'])

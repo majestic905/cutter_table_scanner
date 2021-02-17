@@ -1,6 +1,8 @@
 import numpy as np
-from camera import Camera, CameraPosition
-from scanner import ImagesType
+import logging
+from camera import Camera
+from enums import CameraPosition
+from custom_types import ImagesType
 
 
 def undistort(image: np.ndarray, camera: Camera):
@@ -12,7 +14,7 @@ def project(image: np.ndarray, camera: Camera):
     return image
 
 
-def compose(images: ImagesType):
+def compose(images: ImagesType, logger: logging.Logger = None):
     left_upper = images[CameraPosition.LU]
     right_upper = images[CameraPosition.RU]
     right_lower = images[CameraPosition.RL]

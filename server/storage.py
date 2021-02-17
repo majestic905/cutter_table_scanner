@@ -1,36 +1,7 @@
 import os
 import shutil
 from datetime import datetime
-from enum import Enum
-from camera import CameraPosition
-
-
-class ImageLevel(Enum):
-    ORIGINAL = 'original'
-    UNDISTORTED = 'undistorted'
-    PROJECTED = 'projected'
-
-
-class ScanFile(Enum):
-    LU_ORIGINAL = 'left_upper_original.jpg'
-    RU_ORIGINAL = 'right_upper_original.jpg'
-    RL_ORIGINAL = 'right_lower_original.jpg'
-    LL_ORIGINAL = 'left_lower_original.jpg'
-    LU_UNDISTORTED = 'left_upper_undistorted.jpg'
-    RU_UNDISTORTED = 'right_upper_undistorted.jpg'
-    RL_UNDISTORTED = 'right_lower_undistorted.jpg'
-    LL_UNDISTORTED = 'left_lower_undistorted.jpg'
-    LU_PROJECTED = 'left_upper_projected.jpg'
-    RU_PROJECTED = 'right_upper_projected.jpg'
-    RL_PROJECTED = 'right_lower_projected.jpg'
-    LL_PROJECTED = 'left_lower_projected.jpg'
-    RESULT = 'result.jpg'
-    PARAMS = 'params.json'
-    LOG = 'log.txt'
-
-    @classmethod
-    def image(cls, camera_position: CameraPosition, image_level: ImageLevel):
-        return cls[f'{camera_position.value}_{image_level.value}.jpg']
+from enums import CameraPosition, ScanFile, ImageLevel, ScanType
 
 
 DATA_DIR_PATH = os.path.join(os.path.dirname(__file__), 'data')
@@ -50,7 +21,7 @@ def path_for_scan_file(scan_id: str, file: ScanFile) -> str:
 
 
 def paths_for_image_level(scan_id: str, level: ImageLevel):
-    return {level: path_for_scan_file(scan_id, ScanFile.image(position, level)) for position in CameraPosition}
+    return {position: path_for_scan_file(scan_id, ScanFile.image(position, level)) for position in CameraPosition}
 
 
 def path_for_params_file() -> str:
@@ -58,22 +29,37 @@ def path_for_params_file() -> str:
 
 
 def scans_list():
-    return [
-        {'name': name, 'createdAt': datetime.fromtimestamp(int(name)).strftime('%d %B %Y, %H:%M')}
-        for name in os.listdir(SCANS_DIR_PATH)
-    ]
+    result = []
+
+    for name in os.listdir(SCANS_DIR_PATH):
+        scan_id, scan_type = name.split('_')
+
+        if scan_type == ScanType.SNAPSHOT.value:
+            result.append({
+                'scanId': scan_id,
+                'scanType': scan_type,
+                'images': {level: paths_for_image_level(scan_id, level) for level in ImageLevel},
+                'createdAt': datetime.fromtimestamp(int(name)).strftime('%d %B %Y, %H:%M'),
+            })
+        elif scan_type == ScanType.CALIBRATION.value:
+            result.append({
+                'scanId': scan_id,
+                'scanType': scan_type,
+                'images': {level: paths_for_image_level(scan_id, level) for level in [ImageLevel.ORIGINAL, ImageLevel.UNDISTORTED]},
+                'createdAt': datetime.fromtimestamp(int(name)).strftime('%d %B %Y, %H:%M'),
+            })
+
+    return result
 
 
-def create_scan_dir(scan_id):
-    path = os.path.join(SCANS_DIR_PATH, scan_id)
-
-    if os.path.exists(path):
-        raise FileExistsError()
-
+def create_scan_dir(scan_id: str, scan_type: ScanType):
+    dir_name = f'{scan_id}_{scan_type.value}'
+    path = os.path.join(SCANS_DIR_PATH, dir_name)
     return os.mkdir(path)
 
 
-def copy_params_file(scan_id):
+def copy_params_file(scan_id: str, scan_type: ScanType):
+
     path = os.path.join(SCANS_DIR_PATH, scan_id, ScanFile.PARAMS.value)
     shutil.copy(PARAMS_FILE_PATH, path)
 

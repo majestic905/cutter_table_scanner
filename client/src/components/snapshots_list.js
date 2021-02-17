@@ -25,13 +25,13 @@ const DeleteButton = ({onDelete}) => {
     }, [onDelete]);
 
     return (
-        <span className='header-button' onClick={doDelete}>
-            Удалить
-        </span>
+        <button type="button" className='btn btn-sm bg-dark' onClick={doDelete}>
+            Удалить все
+        </button>
     )
 }
 
-const ScansList = ({scans, loadScans, selectedScan, selectScan}) => {
+const SnapshotsList = ({scans, loadScans, selectedScan, selectScan}) => {
     const doSelect = useCallback(ev => {
         const name = ev.currentTarget.dataset.name;
         const scan = scans.find(item => item.name === name);
@@ -44,9 +44,10 @@ const ScansList = ({scans, loadScans, selectedScan, selectScan}) => {
     return (
         <div className="tree" id="scans-list">
             <header>
-                <h5 className="d-inline">Файлы</h5>
                 <DeleteButton onDelete={loadScans} />
             </header>
+
+            <hr/>
 
             <ul>
                 {scans.map(item => <Item key={item.name} name={item.name}
@@ -59,4 +60,4 @@ const ScansList = ({scans, loadScans, selectedScan, selectScan}) => {
     )
 }
 
-export default ScansList;
+export default SnapshotsList;

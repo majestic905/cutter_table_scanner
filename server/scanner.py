@@ -1,25 +1,15 @@
 import logging
 import cv2
-import numpy as np
-
+import traceback
+import sys
 import storage
 
-from typing import Dict
 from datetime import datetime
 
-from storage import ScanFile, ImageLevel
-from camera import Camera, CameraPosition
+from camera import Camera
 from processing import undistort, project, compose
-
-
-ImagesType = Dict[CameraPosition, np.ndarray]
-CamerasType = Dict[CameraPosition, Camera]
-PathsType = Dict[CameraPosition, str]
-
-
-logging.basicConfig(level=logging.DEBUG, format='[%(asctime)s] %(message)s')
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+from custom_types import ImagesType, CamerasType, PathsType
+from enums import CameraPosition, ImageLevel, ScanFile
 
 
 cameras = {
@@ -28,19 +18,6 @@ cameras = {
     CameraPosition.LL: Camera('/dev/usb3', 'Nikon', 'Nikon Coolpix S9400'),
     CameraPosition.LU: Camera('/dev/usb4', 'Canon', 'Canon Powershot S50'),
 }
-
-
-def capture_photos(paths: PathsType, cameras: CamerasType):
-    for position, camera in cameras.items():
-        camera.capture_to_path(paths[position])
-
-
-def build_undistorted_images(images: ImagesType, cameras: CamerasType):
-    return {position: undistort(images[position], cameras[position]) for position in cameras}
-
-
-def build_projected_images(images: ImagesType, cameras: CamerasType):
-    return {position: project(images[position], cameras[position]) for position in cameras}
 
 
 def read_images(paths: PathsType):
@@ -54,37 +31,79 @@ def persist_image(path, image):
 def persist_images(paths: PathsType, images: ImagesType):
     for key in images:
         persist_image(paths[key], images[key])
-        cv2.imwrite(paths[key], images[key])
 
 
-def perform_scan():
-    scan_id = str(datetime.now().timestamp())
+class Scanner:
+    def __init__(self, cameras: CamerasType = cameras, logger: logging.Logger = None):
+        if cameras.keys() != CameraPosition.__members__.keys():
+            raise ValueError('`cameras` dict keyword param must have all items from CameraPosition as keys')
+        self.cameras = cameras
 
-    storage.create_scan_dir(scan_id)
-    storage.copy_params_file(scan_id)
+        self.logger = logger or logging.getLogger(__name__)
+        self.setup_logger()
 
-    log_file_path = storage.path_for_scan_file(scan_id, ScanFile.LOG)
-    logger_file_handler = logging.FileHandler(log_file_path)
-    logger.addHandler(logger_file_handler)
+        self.scan_id = str(datetime.now().timestamp())
+        self.paths = {level: storage.paths_for_image_level(self.scan_id, level) for level in ImageLevel}
+        self.images = {level: dict.fromkeys(list(CameraPosition)) for level in ImageLevel}
 
-    paths = {level: storage.paths_for_image_level(scan_id, level) for level in ImageLevel}
-    images = {level: dict.fromkeys(list(CameraPosition)) for level in ImageLevel}
+        storage.create_scan_dir(self.scan_id)
+        storage.copy_params_file(self.scan_id)
 
-    try:
-        capture_photos(paths[ImageLevel.ORIGINAL], cameras)
-        images[ImageLevel.ORIGINAL] = read_images(paths[ImageLevel.ORIGINAL])
+    def setup_logger(self):
+        while self.logger.hasHandlers():
+            self.logger.removeHandler(self.logger.handlers[0])
 
-        images[ImageLevel.UNDISTORTED] = build_undistorted_images(images[ImageLevel.ORIGINAL], cameras)
-        persist_images(paths[ImageLevel.UNDISTORTED], images[ImageLevel.UNDISTORTED])
+        log_file_path = storage.path_for_scan_file(self.scan_id, ScanFile.LOG)
+        file_handler = logging.FileHandler(log_file_path)
+        self.logger.addHandler(file_handler)
 
-        images[ImageLevel.PROJECTED] = build_projected_images(images[ImageLevel.UNDISTORTED], cameras)
-        persist_images(paths[ImageLevel.PROJECTED], images[ImageLevel.PROJECTED])
+    def log(self, *args, **kwargs):
+        if self.logger:
+            self.logger.debug(*args, **kwargs)
 
-        result_image = compose(images[ImageLevel.PROJECTED])
-        result_image_path = storage.path_for_scan_file(scan_id, ScanFile.RESULT)
-        persist_image(result_image_path, result_image)
-    except Exception:
-        # log exception
-        pass
-    finally:
-        logger.removeHandler(logger_file_handler)
+    def capture_photos(self, paths: PathsType, cameras: CamerasType):
+        for position, camera in cameras.items():
+            self.log(f'Capture START, {position.value}, {repr(camera)}')
+            camera.capture_to_path(paths[position])
+            self.log(f'Capture END, {position.value}, {repr(camera)}')
+
+    def build_undistorted_images(self, images: ImagesType, cameras: CamerasType):
+        self.log('Building undistorted images...')
+        return {position: undistort(images[position], cameras[position]) for position in cameras}
+
+    def build_projected_images(self, images: ImagesType, cameras: CamerasType):
+        self.log('Building projected images...')
+        return {position: project(images[position], cameras[position]) for position in cameras}
+
+    def build_result(self):
+        self.log('Building result image...')
+        return compose(self.images[ImageLevel.PROJECTED])
+
+    def perform_scan(self):
+        try:
+            self.capture_photos(self.paths[ImageLevel.ORIGINAL], cameras)
+            self.images[ImageLevel.ORIGINAL] = read_images(self.paths[ImageLevel.ORIGINAL])
+
+            self.images[ImageLevel.UNDISTORTED] = self.build_undistorted_images(self.images[ImageLevel.ORIGINAL], cameras)
+            persist_images(self.paths[ImageLevel.UNDISTORTED], self.images[ImageLevel.UNDISTORTED])
+
+            self.images[ImageLevel.PROJECTED] = self.build_projected_images(self.images[ImageLevel.UNDISTORTED], cameras)
+            persist_images(self.paths[ImageLevel.PROJECTED], self.images[ImageLevel.PROJECTED])
+
+            result_image = self.build_result()
+            result_image_path = storage.path_for_scan_file(self.scan_id, ScanFile.RESULT)
+            persist_image(result_image_path, result_image)
+        except Exception:
+            self.log(f'Exception occurred\n\n{traceback.print_exception(*sys.exc_info())}')
+            pass
+
+    def perform_calibration(self):
+        try:
+            self.capture_photos(self.paths[ImageLevel.ORIGINAL], cameras)
+            self.images[ImageLevel.ORIGINAL] = read_images(self.paths[ImageLevel.ORIGINAL])
+
+            self.images[ImageLevel.UNDISTORTED] = self.build_undistorted_images(self.images[ImageLevel.ORIGINAL], cameras)
+            persist_images(self.paths[ImageLevel.UNDISTORTED], self.images[ImageLevel.UNDISTORTED])
+        except Exception:
+            self.log(f'Exception occurred\n\n{traceback.print_exception(*sys.exc_info())}')
+            pass
