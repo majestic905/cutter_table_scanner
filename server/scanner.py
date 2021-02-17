@@ -1,8 +1,6 @@
-import logging
 import cv2
 import traceback
 import sys
-import storage
 
 from scan import Scan
 from camera import Camera
@@ -61,10 +59,10 @@ class Scanner:
         self.log('Building result image...')
         return compose(images)
 
-    def snapshot_to(self, scan: Scan):
+    def make_snapshot(self):
         try:
-            scan.setup_logger()
-            paths, images = scan.paths, scan.images
+            self.scan.setup_logger()
+            paths, images = self.scan.paths, self.scan.images
 
             self.capture_photos(paths[ImageLevel.ORIGINAL], cameras)
             images[ImageLevel.ORIGINAL] = read_images(paths[ImageLevel.ORIGINAL])
@@ -76,18 +74,17 @@ class Scanner:
             persist_images(paths[ImageLevel.PROJECTED], images[ImageLevel.PROJECTED])
 
             result_image = self.build_result(images[ImageLevel.PROJECTED])
-            result_image_path = scan.path_for(ScanFile.RESULT)
+            result_image_path = self.scan.path_for(ScanFile.RESULT)
             persist_image(result_image_path, result_image)
         except Exception:
             self.log(f'Exception occurred\n\n{traceback.print_exception(*sys.exc_info())}')
-            pass
         finally:
-            scan.cleanup_logger()
+            self.scan.cleanup_logger()
 
-    def calibrate_to(self, scan: ScanFile):
+    def make_calibration_images(self):
         try:
-            scan.setup_logger()
-            paths, images = scan.paths, scan.images
+            self.scan.setup_logger()
+            paths, images = self.scan.paths, self.scan.images
 
             self.capture_photos(paths[ImageLevel.ORIGINAL], cameras)
             images[ImageLevel.ORIGINAL] = read_images(paths[ImageLevel.ORIGINAL])
@@ -96,6 +93,5 @@ class Scanner:
             persist_images(paths[ImageLevel.UNDISTORTED], images[ImageLevel.UNDISTORTED])
         except Exception:
             self.log(f'Exception occurred\n\n{traceback.print_exception(*sys.exc_info())}')
-            pass
         finally:
-            scan.cleanup_logger()
+            self.scan.cleanup_logger()

@@ -1,7 +1,7 @@
 import os.path
-import storage
+from scan import Scan
 from scanner import Scanner
-from enums import ScanFile
+from enums import ScanFile, ScanType
 
 from http import HTTPStatus as status
 from flask import Flask, send_from_directory, request
@@ -11,12 +11,13 @@ app = Flask(__name__, static_folder='../client/build', static_url_path='/')
 
 @app.route('/api/scans', methods=['GET'])
 def get_scans():
-    return {'scans': storage.scans_list()}
+    return {'scans': Scan.list_all()}
 
 
 @app.route('/api/scans/<scan_id>', methods=['GET'])
 def get_scan(scan_id):
-    file_path = storage.path_for_scan_file(scan_id, ScanFile.RESULT)
+    scan = Scan.find(scan_id)
+    file_path = scan.path_for(ScanFile.RESULT)
 
     directory = os.path.dirname(file_path)
     kwargs = {
@@ -30,21 +31,23 @@ def get_scan(scan_id):
 
 @app.route('/api/scans', methods=['POST'])
 def post_scans():
-    scanner = Scanner()
-    scanner.perform_scan()
+    scan = Scan.new(ScanType.SNAPSHOT)
+    scanner = Scanner(scan)
+    scanner.make_snapshot()
     return '', status.OK
 
 
 @app.route('/api/scans', methods=['DELETE'])
 def delete_scans():
-    storage.clear_scans_dir()
+    Scan.delete_all()
     return '', status.NO_CONTENT
 
 
 @app.route('/api/cameras/projection_points/calibrate', methods=['POST'])
 def camera_projection_points_calibrate():
-    scanner = Scanner()
-    scanner.perform_calibration()
+    scan = Scan.new(ScanType.CALIBRATION)
+    scanner = Scanner(scan)
+    scanner.make_calibration_images()
     return '', status.OK
 
 

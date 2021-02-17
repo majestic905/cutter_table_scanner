@@ -1,5 +1,6 @@
 import os.path
 import shutil
+import lensfunpy
 
 
 class Camera:
@@ -15,11 +16,9 @@ class Camera:
         # initialize in gphoto2?
 
     def present_in_lensfun(self):
-        # db = lensfunpy.Database()
-        # cameras = db.find_cameras(self.manufacturer, self.model)
-        # return len(cameras) > 0
-        pass
-
+        db = lensfunpy.Database()
+        cameras = db.find_cameras(self.manufacturer, self.model)
+        return len(cameras) > 0
 
     def capture_to_path(self, path):
         src_path = os.path.join(__file__, '..', 'eggs', 'sample_scan', os.path.basename(path))
