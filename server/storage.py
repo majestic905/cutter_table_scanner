@@ -59,7 +59,6 @@ def create_scan_dir(scan_id: str, scan_type: ScanType):
 
 
 def copy_params_file(scan_id: str, scan_type: ScanType):
-
     path = os.path.join(SCANS_DIR_PATH, scan_id, ScanFile.PARAMS.value)
     shutil.copy(PARAMS_FILE_PATH, path)
 
