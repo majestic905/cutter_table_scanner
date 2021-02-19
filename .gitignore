@@ -1,6 +1,6 @@
 /.idea
 .eslintcache
-server/data
+server/static
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -142,7 +142,7 @@ dmypy.json
 /client/coverage
 
 # production
-/client/build
+/server/static/build
 
 # misc
 .DS_Store

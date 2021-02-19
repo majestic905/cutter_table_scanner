@@ -1,3 +1,4 @@
+from __future__ import annotations
 from enum import Enum
 
 
@@ -28,12 +29,12 @@ class ScanFile(Enum):
     RL_PROJECTED = 'right_lower_projected.jpg'
     LL_PROJECTED = 'left_lower_projected.jpg'
     RESULT = 'result.jpg'
-    PARAMS = 'params.json'
+    CAMERAS = 'cameras.json'
     LOG = 'log.txt'
 
     @classmethod
     def image(cls, camera_position: CameraPosition, image_level: ImageLevel):
-        return cls[f'{camera_position.value}_{image_level.value}.jpg']
+        return cls[f'{camera_position.name}_{image_level.name}']
 
 
 class ScanType(Enum):

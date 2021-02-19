@@ -1,7 +1,7 @@
 import {useState, useEffect, useCallback} from "react";
 
-import ScansList from "./components/snapshots_list";
-import ScanResult from "./components/snapshot";
+import ScansList from "./components/scans_list";
+import Scan from "./components/scan";
 
 import './app.scss';
 
@@ -18,6 +18,7 @@ function App() {
             .then(res => res.json())
             .then(data => {
                 setScans(data.scans);
+                console.log(data.scans);
                 if (data.scans.length > 0)
                     setSelectedScan(data.scans[0]);
             })
@@ -40,7 +41,7 @@ function App() {
                 <div className="divider-vert"/>
 
                 <div className="column" id="column-right">
-                    <ScanResult loadScans={loadScans} selectedScan={selectedScan} />
+                    <Scan loadScans={loadScans} selectedScan={selectedScan} />
                 </div>
             </div>
         </main>

@@ -1,20 +1,15 @@
 import cv2
 import traceback
 import sys
+import json
 
 from scan import Scan
-from camera import Camera
+from cameras import cameras
 from processing import undistort, project, compose
-from custom_types import ImagesType, CamerasType, PathsType
-from enums import CameraPosition, ImageLevel, ScanFile
+from server.constants.custom_types import ImagesType, CamerasType, PathsType
+from server.constants.enums import CameraPosition, ImageLevel, ScanFile
 
 
-cameras = {
-    CameraPosition.RU: Camera('/dev/usb1', 'Canon', 'Canon Powershot S50'),
-    CameraPosition.RL: Camera('/dev/usb2', 'Canon', 'Canon Powershot S50'),
-    CameraPosition.LL: Camera('/dev/usb3', 'Nikon', 'Nikon Coolpix S9400'),
-    CameraPosition.LU: Camera('/dev/usb4', 'Canon', 'Canon Powershot S50'),
-}
 
 
 def read_images(paths: PathsType):

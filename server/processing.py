@@ -1,8 +1,8 @@
 import numpy as np
 import logging
 from camera import Camera
-from enums import CameraPosition
-from custom_types import ImagesType
+from server.constants.enums import CameraPosition
+from server.constants.custom_types import ImagesType
 
 
 def undistort(image: np.ndarray, camera: Camera):

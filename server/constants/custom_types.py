@@ -1,8 +1,8 @@
 import numpy as np
 from typing import Dict
 
-from camera import Camera
-from enums import CameraPosition
+from server.camera import Camera
+from server.constants.enums import CameraPosition
 
 ImagesType = Dict[CameraPosition, np.ndarray]
 CamerasType = Dict[CameraPosition, Camera]

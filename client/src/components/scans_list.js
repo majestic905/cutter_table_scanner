@@ -3,14 +3,14 @@ import cx from 'classnames';
 import folderSvg from "../images/folder-24px.svg";
 
 
-const Item = ({name, createdAt, isSelected, doSelect}) => {
+const Item = ({item, createdAt, isSelected, doSelect}) => {
     const className = cx({'text-bold': isSelected});
 
     return (
         <li>
-            <span className={className} onClick={doSelect} data-name={name}>
+            <span className={className} onClick={doSelect} data-id={item.scanId}>
                 <img src={folderSvg} alt="folder_icon"/>
-                <span>{createdAt}</span>
+                <span>{item.createdAt} ({item.scanType[0]})</span>
             </span>
         </li>
     )
@@ -31,10 +31,10 @@ const DeleteButton = ({onDelete}) => {
     )
 }
 
-const SnapshotsList = ({scans, loadScans, selectedScan, selectScan}) => {
+const ScansList = ({scans, loadScans, selectedScan, selectScan}) => {
     const doSelect = useCallback(ev => {
-        const name = ev.currentTarget.dataset.name;
-        const scan = scans.find(item => item.name === name);
+        const id = ev.currentTarget.dataset.id;
+        const scan = scans.find(item => item.scanId === id);
         selectScan(scan);
     }, [selectScan, scans]);
 
@@ -50,8 +50,8 @@ const SnapshotsList = ({scans, loadScans, selectedScan, selectScan}) => {
             <hr/>
 
             <ul>
-                {scans.map(item => <Item key={item.name} name={item.name}
-                                         createdAt={item.createdAt}
+                {scans.map(item => <Item key={item.scanId}
+                                         item={item}
                                          isSelected={item === selectedScan}
                                          doSelect={doSelect}
                 />)}
@@ -60,4 +60,4 @@ const SnapshotsList = ({scans, loadScans, selectedScan, selectScan}) => {
     )
 }
 
-export default SnapshotsList;
+export default ScansList;
