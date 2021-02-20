@@ -18,7 +18,6 @@ function App() {
             .then(res => res.json())
             .then(data => {
                 setScans(data.scans);
-                console.log(data.scans);
                 if (data.scans.length > 0)
                     setSelectedScan(data.scans[0]);
             })

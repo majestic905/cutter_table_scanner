@@ -1,12 +1,12 @@
-import os.path
+from datetime import datetime
+from http import HTTPStatus as status
+from flask import request
+
 from scan import Scan
 from scanner import Scanner
 from server.constants.enums import ScanFile, ScanType, ImageLevel
-from datetime import datetime
-
-from http import HTTPStatus as status
-from flask import send_from_directory, request
 from app import app
+from cameras import read_cameras_data, update_cameras_data
 
 
 
@@ -42,19 +42,19 @@ def get_scans():
     return {'scans': scans}
 
 
-@app.route('/api/scans/<scan_id>', methods=['GET'])
-def get_scan(scan_id):
-    scan = Scan.find_by_id(scan_id)
-    file_path = scan.path_for(ScanFile.RESULT)
-
-    directory = os.path.dirname(file_path)
-    kwargs = {
-        'filename': os.path.basename(file_path),
-        'as_attachment': bool(request.args.get('as_attachment')),
-        'attachment_filename': f'{scan_id}.jpg'
-    }
-
-    return send_from_directory(directory, **kwargs)
+# @app.route('/api/scans/<scan_id>/result', methods=['GET'])
+# def get_scan(scan_id):
+#     scan = Scan.find_by_id(scan_id)
+#     file_path = scan.path_for(ScanFile.RESULT)
+#
+#     directory = os.path.dirname(file_path)
+#     kwargs = {
+#         'filename': os.path.basename(file_path),
+#         'as_attachment': bool(request.args.get('as_attachment')),
+#         'attachment_filename': f'{scan_id}.jpg'
+#     }
+#
+#     return send_from_directory(directory, **kwargs)
 
 
 @app.route('/api/scans', methods=['POST'])
@@ -71,18 +71,22 @@ def delete_scans():
     return '', status.NO_CONTENT
 
 
+@app.route('/api/cameras', methods=['GET'])
+def get_cameras_data():
+    return read_cameras_data()
+
+
+@app.route('/api/cameras', methods=['POST'])
+def post_cameras_data():
+    update_cameras_data(request.json)
+    return '', status.OK
+
+
 # @app.route('/api/cameras/projection_points/calibrate', methods=['POST'])
 # def camera_projection_points_calibrate():
 #     scan = Scan.new(ScanType.CALIBRATION)
 #     scanner = Scanner(scan)
 #     scanner.make_calibration_images()
-#     return '', status.OK
-
-
-# @app.route('/api/cameras/projection_points', methods=['POST'])
-# def camera_projection_points_set():
-#     scanner = Scanner()
-#     scanner.perform_calibration()
 #     return '', status.OK
 
 
