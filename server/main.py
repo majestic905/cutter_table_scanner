@@ -28,40 +28,25 @@ def get_scans():
         if scan.type == ScanType.CALIBRATION:
             image_levels = [ImageLevel.ORIGINAL, ImageLevel.UNDISTORTED]
 
-        images = {level: scan.paths_for_image_level(level) for level in image_levels}
+        images = {level: scan.urls_for_image_level(level) for level in image_levels}
         for image_level in images:
             item['images'][image_level.name] = {}
             for camera_position in images[image_level]:
                 item['images'][image_level.name][camera_position.name] = images[image_level][camera_position]
 
         if scan.type == ScanType.SNAPSHOT:
-            item['images'][ScanFile.RESULT.name] = scan.path_for(ScanFile.RESULT)
+            item['images'][ScanFile.RESULT.name] = scan.url_for(ScanFile.RESULT)
 
         scans.append(item)
 
-    return {'scans': scans}
-
-
-# @app.route('/api/scans/<scan_id>/result', methods=['GET'])
-# def get_scan(scan_id):
-#     scan = Scan.find_by_id(scan_id)
-#     file_path = scan.path_for(ScanFile.RESULT)
-#
-#     directory = os.path.dirname(file_path)
-#     kwargs = {
-#         'filename': os.path.basename(file_path),
-#         'as_attachment': bool(request.args.get('as_attachment')),
-#         'attachment_filename': f'{scan_id}.jpg'
-#     }
-#
-#     return send_from_directory(directory, **kwargs)
+    return {'scans': list(reversed(scans))}
 
 
 @app.route('/api/scans', methods=['POST'])
 def post_scans():
     scan = Scan.new(ScanType.SNAPSHOT)
     scanner = Scanner(scan)
-    scanner.make_snapshot()
+    scanner.perform()
     return '', status.OK
 
 
@@ -86,7 +71,7 @@ def post_cameras_data():
 # def camera_projection_points_calibrate():
 #     scan = Scan.new(ScanType.CALIBRATION)
 #     scanner = Scanner(scan)
-#     scanner.make_calibration_images()
+#     scanner.perform()
 #     return '', status.OK
 
 

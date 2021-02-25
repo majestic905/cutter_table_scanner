@@ -3,7 +3,7 @@ import logging
 import shutil
 from datetime import datetime
 from typing import Optional
-from flask import url_for
+from flask import url_for as flask_url_for
 
 from server.constants.paths import SCANS_DIR_PATH, CAMERAS_FILE_PATH
 from server.constants.enums import ScanType, ScanFile, ImageLevel, CameraPosition
@@ -14,7 +14,7 @@ DEFAULT_LOGGER = logging.getLogger(__name__)
 
 class Scan:
     def __init__(self, timestamp: Optional[str], scan_type: ScanType, logger: logging.Logger = None, **kwargs):
-        self.timestamp = timestamp or str(datetime.now().timestamp())
+        self.timestamp = timestamp or str(int(datetime.now().timestamp()))
         self.type = scan_type
 
         self.logger = logger or DEFAULT_LOGGER
@@ -26,18 +26,22 @@ class Scan:
     @staticmethod
     def new(scan_type: ScanType):
         scan = Scan(None, scan_type)
-        os.mkdir(scan.id)
+        os.mkdir(scan.root_directory)
         shutil.copy(CAMERAS_FILE_PATH, scan.path_for(ScanFile.CAMERAS))
         return scan
 
     @staticmethod
     def find_by_id(scan_id: str, *, check_existence=True):
+        timestamp, scan_type = scan_id.split('_')
+        scan = Scan(timestamp, ScanType[scan_type])
+
         if check_existence:
-            if not os.path.exists(os.path.join(SCANS_DIR_PATH, scan_id)):
+            if not os.path.exists(scan.root_directory):
                 raise FileNotFoundError(f'Scan with id=`{scan_id}` does not exist')
 
-        timestamp, scan_type = scan_id.split('_')
-        return Scan(timestamp, ScanType[scan_type])
+        return scan
+
+    #########
 
     def log(self, *args, **kwargs):
         self.logger.debug(*args, **kwargs)
@@ -51,42 +55,33 @@ class Scan:
         self.logger.removeHandler(self.logger_handler)
         self.logger_handler = None
 
+    #########
+
     @property
     def id(self):
         return f'{self.timestamp}_{self.type.name}'
 
+    @property
+    def root_directory(self):
+        return os.path.join(SCANS_DIR_PATH, self.id)
+
     def path_for(self, scan_file: ScanFile):
-        return url_for('static', filename=f'data/scans/{self.id}/{scan_file.value}')
+        return os.path.join(self.root_directory, scan_file.value)
 
     def paths_for_image_level(self, level: ImageLevel):
         return {position: self.path_for(ScanFile.image(position, level)) for position in CameraPosition}
 
+    def url_for(self, scan_file: ScanFile):
+        return flask_url_for('static', filename=f'data/scans/{self.id}/{scan_file.value}')
+
+    def urls_for_image_level(self, level: ImageLevel):
+        return {position: self.url_for(ScanFile.image(position, level)) for position in CameraPosition}
+
+    #########
+
     @staticmethod
     def ids():
         return os.listdir(SCANS_DIR_PATH)
-
-    @staticmethod
-    def list_all():
-        result = []
-
-        for scan_id in os.listdir(SCANS_DIR_PATH):
-            scan = Scan.find_by_id(scan_id, check_existence=False)
-
-            item = {
-                'scanId': scan.id,
-                'scanType': scan.type,
-                'createdAt': datetime.fromtimestamp(int(scan.timestamp)).strftime('%d %B %Y, %H:%M'),
-            }
-
-            if scan.type == ScanType.SNAPSHOT:
-                item['images'] = {level: scan.paths_for_image_level(level) for level in ImageLevel}
-            elif scan.type == ScanType.CALIBRATION:
-                item['images'] = {level: scan.paths_for_image_level(level) for level in
-                                  [ImageLevel.ORIGINAL, ImageLevel.UNDISTORTED]}
-
-            result.append(item)
-
-        return result
 
     @staticmethod
     def delete_all():

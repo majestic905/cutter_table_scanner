@@ -1,19 +1,17 @@
 import cv2
 import traceback
 import sys
-import json
+import os.path
 
 from scan import Scan
 from cameras import cameras
 from processing import undistort, project, compose
 from server.constants.custom_types import ImagesType, CamerasType, PathsType
-from server.constants.enums import CameraPosition, ImageLevel, ScanFile
-
-
+from server.constants.enums import CameraPosition, ImageLevel, ScanFile, ScanType
 
 
 def read_images(paths: PathsType):
-    return {position: cv2.imread(paths[position]) for position in cameras}
+    return {position: cv2.imread(paths[position]) for position in paths}
 
 
 def persist_image(path, image):
@@ -30,7 +28,7 @@ class Scanner:
         self.scan = scan
         self.cameras = cameras
 
-        if cameras.keys() != CameraPosition.__members__.keys():
+        if set(cameras.keys()) != set(CameraPosition.__members__.values()):
             raise ValueError('`cameras` dict must have all items from CameraPosition as keys')
 
     def log(self, *args, **kwargs):
@@ -52,13 +50,18 @@ class Scanner:
 
     def build_result(self, images: ImagesType):
         self.log('Building result image...')
-        return compose(images)
+
+        src_path = os.path.join(__file__, '..', 'eggs', 'sample_scan', ScanFile.RESULT.value)
+        return cv2.imread(src_path)
+
+        # return compose(images)
 
     def make_snapshot(self):
         try:
             self.scan.setup_logger()
             paths, images = self.scan.paths, self.scan.images
 
+            print(paths[ImageLevel.ORIGINAL])
             self.capture_photos(paths[ImageLevel.ORIGINAL], cameras)
             images[ImageLevel.ORIGINAL] = read_images(paths[ImageLevel.ORIGINAL])
 
@@ -90,3 +93,9 @@ class Scanner:
             self.log(f'Exception occurred\n\n{traceback.print_exception(*sys.exc_info())}')
         finally:
             self.scan.cleanup_logger()
+
+    def perform(self):
+        if self.scan.type == ScanType.SNAPSHOT:
+            self.make_snapshot()
+        elif self.scan.type == ScanType.CALIBRATION:
+            self.make_calibration_images()
