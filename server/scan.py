@@ -21,7 +21,8 @@ class Scan:
         self.logger_handler = None
 
         self.paths = {level: self.paths_for_image_level(level) for level in ImageLevel}
-        self.images = {level: dict.fromkeys(list(CameraPosition)) for level in ImageLevel}
+        self.images = {level: dict.fromkeys(CameraPosition) for level in ImageLevel}
+        self.exif = dict.fromkeys(CameraPosition)
 
     @staticmethod
     def new(scan_type: ScanType):

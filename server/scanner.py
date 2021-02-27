@@ -1,12 +1,13 @@
-import cv2
 import traceback
 import sys
 import os.path
+import cv2
+from pyexiv2 import Image
 
 from scan import Scan
 from cameras import cameras
 from processing import undistort, project, compose
-from server.constants.custom_types import ImagesType, CamerasType, PathsType
+from server.constants.custom_types import ImagesType, CamerasType, PathsType, ExifType
 from server.constants.enums import CameraPosition, ImageLevel, ScanFile, ScanType
 
 
@@ -23,12 +24,26 @@ def persist_images(paths: PathsType, images: ImagesType):
         persist_image(paths[key], images[key])
 
 
+def read_exif_data(paths: PathsType):
+    exif_data = {}
+
+    for position, file_path in paths.items():
+        with Image(file_path) as img:
+            data = img.read_exif()
+            exif_data[position] = {
+                'focal_length': eval(data['Exif.Photo.FocalLength']),  # eval('3520/1000')
+                'aperture': eval(data['Exif.Photo.FNumber'])  # eval('180/100')
+            }
+
+    return exif_data
+
+
 class Scanner:
     def __init__(self, scan: Scan, cameras: CamerasType = cameras):
         self.scan = scan
         self.cameras = cameras
 
-        if set(cameras.keys()) != set(CameraPosition.__members__.values()):
+        if set(cameras.keys()) != set(CameraPosition):
             raise ValueError('`cameras` dict must have all items from CameraPosition as keys')
 
     def log(self, *args, **kwargs):
@@ -40,9 +55,9 @@ class Scanner:
             camera.capture_to_path(paths[position])
             self.log(f'Capture END, {position.value}, {repr(camera)}')
 
-    def build_undistorted_images(self, images: ImagesType, cameras: CamerasType):
+    def build_undistorted_images(self, images: ImagesType, exif: ExifType, cameras: CamerasType):
         self.log('Building undistorted images...')
-        return {position: undistort(images[position], cameras[position]) for position in cameras}
+        return {position: undistort(images[position], exif[position], cameras[position]) for position in cameras}
 
     def build_projected_images(self, images: ImagesType, cameras: CamerasType):
         self.log('Building projected images...')
@@ -61,11 +76,11 @@ class Scanner:
             self.scan.setup_logger()
             paths, images = self.scan.paths, self.scan.images
 
-            print(paths[ImageLevel.ORIGINAL])
             self.capture_photos(paths[ImageLevel.ORIGINAL], cameras)
             images[ImageLevel.ORIGINAL] = read_images(paths[ImageLevel.ORIGINAL])
 
-            images[ImageLevel.UNDISTORTED] = self.build_undistorted_images(images[ImageLevel.ORIGINAL], cameras)
+            exif = read_exif_data(paths[ImageLevel.ORIGINAL])
+            images[ImageLevel.UNDISTORTED] = self.build_undistorted_images(images[ImageLevel.ORIGINAL], exif, cameras)
             persist_images(paths[ImageLevel.UNDISTORTED], images[ImageLevel.UNDISTORTED])
 
             images[ImageLevel.PROJECTED] = self.build_projected_images(images[ImageLevel.UNDISTORTED], cameras)

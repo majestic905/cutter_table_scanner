@@ -22,7 +22,8 @@ def create_cameras(data: dict):
     global cameras
     for position, data in data.items():
         position = CameraPosition[position]
-        camera = Camera(data['usb_port'], data['maker'], data['model'], projection_points=data['projection_points'])
+        projection_points = {CameraPosition[key]: value for key, value in data['projection_points'].items()}
+        camera = Camera(data['usb_port'], data['maker'], data['model'], projection_points=projection_points)
         cameras[position] = camera
 
 

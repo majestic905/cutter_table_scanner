@@ -6,4 +6,5 @@ from server.constants.enums import CameraPosition
 
 ImagesType = Dict[CameraPosition, np.ndarray]
 CamerasType = Dict[CameraPosition, Camera]
+ExifType = Dict[CameraPosition, Dict[str, float]]
 PathsType = Dict[CameraPosition, str]
