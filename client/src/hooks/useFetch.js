@@ -1,42 +1,64 @@
 import {useState, useEffect, useCallback} from 'react'
-import axios from 'axios';
 
 
-export default url => {
-  // const baseUrl = 'http://localhost:5000';
-  const [isLoading, setIsLoading] = useState(false);
-  const [response, setResponse] = useState(null);
-  const [error, setError] = useState(null);
-  const [options, setOptions] = useState({});
+const useFetch = (url) => {
+    const [isLoading, setIsLoading] = useState(false);
+    const [response, setResponse] = useState(null);
+    const [error, setError] = useState(null);
+    const [options, setOptions] = useState({});
+    const [query, setQuery] = useState('');
 
-  const doFetch = useCallback((options = {}) => {
-    setOptions(options);
-    setIsLoading(true);
-  }, []);
+    const doFetch = useCallback((options = {}, query = '') => {
+        if (!options.headers)
+            options.headers = {};
 
-  useEffect(() => {
-    let skipGetResponseAfterDestroy = false;
-    if (!isLoading)
-      return;
+        if (!options.headers['Content-Type'])
+            options.headers['Content-Type'] = 'application/json';
 
-    axios(url, options)
-      .then(res => {
-        if (!skipGetResponseAfterDestroy) {
-          setResponse(res.data);
-          setIsLoading(false);
+        if (query.length > 0)
+            query = '?' + query
+
+        setOptions(options);
+        setQuery(query);
+        setIsLoading(true);
+    }, []);
+
+    useEffect(() => {
+        let skipGetResponseAfterDestroy = false;
+
+        if (!isLoading)
+            return;
+
+        async function _fetch() {
+            try {
+                const response = await fetch(url + query, options);
+                console.log(response);
+                const json = await response.json();
+
+                if (!skipGetResponseAfterDestroy) {
+                    if (!response.ok)
+                        throw new Error(json.message);
+
+                    setResponse(json);
+                    setIsLoading(false);
+                }
+            } catch (error) {
+                if (!skipGetResponseAfterDestroy) {
+                    setError(error.message);
+                    setIsLoading(false);
+                }
+            }
         }
-      })
-      .catch(error => {
-        if (!skipGetResponseAfterDestroy) {
-          setError(error.response ? error.response.data : error.message);
-          setIsLoading(false);
+
+        _fetch();
+
+        return () => {
+            skipGetResponseAfterDestroy = true;
         }
-      });
+    }, [isLoading, url, options, query]);
 
-    return () => {
-      skipGetResponseAfterDestroy = true;
-    }
-  }, [isLoading, url, options]);
+    return [{isLoading, response, error}, doFetch];
+};
 
-  return [{isLoading, response, error}, doFetch];
-}
+
+export default useFetch;

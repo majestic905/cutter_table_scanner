@@ -1,45 +1,25 @@
-import os.path
-import json
+import settings
 from camera import Camera
 from server.constants.enums import CameraPosition
-from server.constants.paths import CAMERAS_FILE_PATH
 
 
-cameras = {}
+def _create_camera(data: dict):
+    projection_points = {CameraPosition[key]: value for key, value in data['projection_points'].items()}
+    return Camera(data['usb_port'], data['maker'], data['model'], projection_points=projection_points)
 
 
-def read_cameras_data():
-    with open(CAMERAS_FILE_PATH) as file:
-        return json.load(file)
+def _create_cameras():
+    cameras_data = settings.get_settings()['cameras']
+    return {CameraPosition[key]: _create_camera(data) for key, data in cameras_data.items()}
 
 
-def save_cameras_data(data: dict):
-    with open(CAMERAS_FILE_PATH, 'w') as file:
-        json.dump(data, file, indent=4)
+def update_cameras():
+    global _cameras
+    _cameras = _create_cameras()
 
 
-def create_cameras(data: dict):
-    global cameras
-    for position, data in data.items():
-        position = CameraPosition[position]
-        projection_points = {CameraPosition[key]: value for key, value in data['projection_points'].items()}
-        camera = Camera(data['usb_port'], data['maker'], data['model'], projection_points=projection_points)
-        cameras[position] = camera
+def get_cameras():
+    return _cameras
 
 
-def update_cameras_data(data: dict):
-    save_cameras_data(data)
-    create_cameras(data)
-
-
-if os.path.exists(CAMERAS_FILE_PATH):
-    data = read_cameras_data()
-    create_cameras(data)
-else:
-    projection_points = {position.name: [0, 0] for position in CameraPosition}
-    data = {
-        position.name: {"maker": "", "model": "", "usb_port": "", "projection_points": projection_points}
-        for position in CameraPosition
-    }
-    save_cameras_data(data)
-    create_cameras(data)
+_cameras = _create_cameras()

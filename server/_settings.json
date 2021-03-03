@@ -1,0 +1,60 @@
+{
+    "table_sizes": {
+        "LL": [1500, 1500],
+        "LU": [1500, 1500],
+        "RL": [1500, 1500],
+        "RU": [1500, 1500]
+    },
+    "image_sizes": {
+        "LL": [1500, 1500],
+        "LU": [1500, 1500],
+        "RL": [1500, 1500],
+        "RU": [1500, 1500]
+    },
+    "cameras": {
+        "LL": {
+            "maker": "Canon",
+            "model": "Canon Powershot S50",
+            "projection_points": {
+                "LL": [0, 1000],
+                "LU": [0, 0],
+                "RL": [1000, 1000],
+                "RU": [1000, 0]
+            },
+            "usb_port": "/dev/usb3"
+        },
+        "LU": {
+            "maker": "Canon",
+            "model": "Canon Powershot S50",
+            "projection_points": {
+                "LL": [0, 1000],
+                "LU": [0, 0],
+                "RL": [1000, 1000],
+                "RU": [1000, 0]
+            },
+            "usb_port": "/dev/usb4"
+        },
+        "RL": {
+            "maker": "Canon",
+            "model": "Canon Powershot S50",
+            "projection_points": {
+                "LL": [0, 1000],
+                "LU": [0, 0],
+                "RL": [1000, 1000],
+                "RU": [1000, 0]
+            },
+            "usb_port": "/dev/usb2"
+        },
+        "RU": {
+            "maker": "Canon",
+            "model": "Canon Powershot S50",
+            "projection_points": {
+                "LL": [0, 1000],
+                "LU": [0, 0],
+                "RL": [1000, 1000],
+                "RU": [1000, 0]
+            },
+            "usb_port": "/dev/usb1"
+        }
+    }
+}

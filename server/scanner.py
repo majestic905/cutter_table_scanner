@@ -5,7 +5,7 @@ import cv2
 from pyexiv2 import Image
 
 from scan import Scan
-from cameras import cameras
+from cameras import get_cameras
 from processing import undistort, project, compose
 from server.constants.custom_types import ImagesType, CamerasType, PathsType, ExifType
 from server.constants.enums import CameraPosition, ImageLevel, ScanFile, ScanType
@@ -39,7 +39,7 @@ def read_exif_data(paths: PathsType):
 
 
 class Scanner:
-    def __init__(self, scan: Scan, cameras: CamerasType = cameras):
+    def __init__(self, scan: Scan, cameras: CamerasType = get_cameras()):
         self.scan = scan
         self.cameras = cameras
 
@@ -99,10 +99,10 @@ class Scanner:
             self.scan.setup_logger()
             paths, images = self.scan.paths, self.scan.images
 
-            self.capture_photos(paths[ImageLevel.ORIGINAL], cameras)
+            self.capture_photos(paths[ImageLevel.ORIGINAL], self.cameras)
             images[ImageLevel.ORIGINAL] = read_images(paths[ImageLevel.ORIGINAL])
 
-            images[ImageLevel.UNDISTORTED] = self.build_undistorted_images(images[ImageLevel.ORIGINAL], cameras)
+            images[ImageLevel.UNDISTORTED] = self.build_undistorted_images(images[ImageLevel.ORIGINAL], self.cameras)
             persist_images(paths[ImageLevel.UNDISTORTED], images[ImageLevel.UNDISTORTED])
         except Exception:
             self.log(f'Exception occurred\n\n{traceback.print_exception(*sys.exc_info())}')

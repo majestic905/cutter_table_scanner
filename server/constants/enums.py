@@ -29,7 +29,7 @@ class ScanFile(Enum):
     RL_PROJECTED = 'right_lower_projected.jpg'
     LL_PROJECTED = 'left_lower_projected.jpg'
     RESULT = 'result.jpg'
-    CAMERAS = 'cameras.json'
+    SETTINGS = 'settings.json'
     LOG = 'log.txt'
 
     @classmethod

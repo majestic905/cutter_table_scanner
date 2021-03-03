@@ -1,6 +1,7 @@
-import {useCallback} from "react";
+import {useCallback, useEffect} from "react";
 import cx from 'classnames';
 import folderSvg from "../images/folder-24px.svg";
+import useFetch from "../hooks/useFetch";
 
 
 const Item = ({item, createdAt, isSelected, doSelect}) => {
@@ -17,15 +18,24 @@ const Item = ({item, createdAt, isSelected, doSelect}) => {
 }
 
 const DeleteButton = ({onDelete}) => {
+    const [{isLoading, response, error}, doFetch] = useFetch("/api/scans");
+
     const doDelete = useCallback(() => {
         if (window.confirm('Точно удалить?'))
-            fetch('/api/scans', {method: 'DELETE'})
-                .then(onDelete)
-                .catch(error => console.error(error));
+            doFetch({method: 'DELETE'});
     }, [onDelete]);
 
+    useEffect(() => {
+        if (response)
+            onDelete();
+        else if (error)
+            alert(`Ошибка при удалении: ${error}`);
+    }, [response, error]);
+
+    const btnClassName = cx("btn btn-sm btn-primary", {loading: isLoading});
+
     return (
-        <button type="button" className='btn btn-sm bg-dark' onClick={doDelete}>
+        <button type="button" className={btnClassName} onClick={doDelete}>
             Удалить все
         </button>
     )

@@ -1,44 +1,45 @@
-import {useCallback} from "react";
+import {useCallback, useEffect} from "react";
+import useModal from "../../hooks/useModal";
+import useFetch from "../../hooks/useFetch";
 import Snapshot from './snapshot';
 import Calibration from './calibration';
-
-
-const ScanButton = ({onFinish}) => {
-    const callApi = useCallback(() => {
-        fetch('/api/scans', {method: 'POST'})
-            .then(onFinish)
-            .catch(error => console.error(error));
-    }, [onFinish]);
-
-    return (
-        <button type="button" className='btn btn-sm bg-dark mr-2' onClick={callApi}>
-            Полный скан
-        </button>
-    )
-}
-
-
-const CalibrateButton = ({onFinish}) => {
-    const callApi = useCallback(() => {
-        fetch('/api/cameras/projection_points/calibrate', {method: 'POST'})
-            .then(onFinish)
-            .catch(error => console.error(error));
-    }, [onFinish]);
-
-    return (
-        <button type="button" className='btn btn-sm bg-dark mr-2' onClick={callApi}>
-            Калибровка точек
-        </button>
-    )
-}
+import SettingsModal from "../settings_modal";
 
 
 const Scan = ({loadScans, selectedScan}) => {
+    const {isOpened, closeModal, openModal} = useModal();
+
+    const [{isLoading, response, error}, doFetch] = useFetch('/api/scans');
+
+    const requestScan = useCallback(type => {
+        doFetch({method: 'POST'}, `type=${type}`);
+    }, [doFetch]);
+
+    useEffect(() => {
+        if (response)
+            alert('Сканирование выполнено');
+        else if (error) {
+            alert(`Произошла ошибка, сканирование не выполнено: ${error}`);
+        }
+
+        if (response || error)
+            loadScans();
+    }, [response, error, loadScans]);
+
     return (
         <div id="scan">
             <header>
-                <ScanButton onFinish={loadScans}/>
-                <CalibrateButton onFinish={loadScans}/>
+                <button className="btn btn-sm btn-primary mr-2" onClick={requestScan}>
+                    Полный скан
+                </button>
+
+                <button className="btn btn-sm btn-primary mr-2" onClick={requestScan}>
+                    Калибровка точек
+                </button>
+
+                <button type="button" className='btn btn-sm' onClick={openModal}>
+                    Настройки
+                </button>
             </header>
 
             <hr/>
@@ -46,6 +47,7 @@ const Scan = ({loadScans, selectedScan}) => {
             {!selectedScan && <p className="text-italic">Выберите скан из списка</p>}
             {selectedScan?.scanType === "SNAPSHOT" && <Snapshot scan={selectedScan}/>}
             {selectedScan?.scanType === "CALIBRATION" && <Calibration scan={selectedScan}/>}
+            {isOpened && <SettingsModal closeModal={closeModal} />}
         </div>
     )
 }

@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Optional
 from flask import url_for as flask_url_for
 
-from server.constants.paths import SCANS_DIR_PATH, CAMERAS_FILE_PATH
+from server.constants.paths import SCANS_DIR_PATH, SETTINGS_FILE_PATH
 from server.constants.enums import ScanType, ScanFile, ImageLevel, CameraPosition
 
 
@@ -28,7 +28,7 @@ class Scan:
     def new(scan_type: ScanType):
         scan = Scan(None, scan_type)
         os.mkdir(scan.root_directory)
-        shutil.copy(CAMERAS_FILE_PATH, scan.path_for(ScanFile.CAMERAS))
+        shutil.copy(SETTINGS_FILE_PATH, scan.path_for(ScanFile.SETTINGS))
         return scan
 
     @staticmethod

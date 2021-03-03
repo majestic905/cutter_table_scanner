@@ -1,4 +1,5 @@
-import {useState, useEffect, useCallback} from "react";
+import {useState, useEffect} from "react";
+import useFetch from "./hooks/useFetch";
 
 import ScansList from "./components/scans_list";
 import Scan from "./components/scan";
@@ -8,23 +9,21 @@ import './app.scss';
 
 
 function App() {
-    const [scans, setScans] = useState(null);
     const [selectedScan, setSelectedScan] = useState(null);
 
-    const loadScans = useCallback(() => {
-        setSelectedScan(null);
+    const [{isLoading, response, error}, loadScans] = useFetch("/api/scans");
 
-        fetch('/api/scans')
-            .then(res => res.json())
-            .then(data => {
-                setScans(data.scans);
-                if (data.scans.length > 0)
-                    setSelectedScan(data.scans[0]);
-            })
-            .catch(error => console.error(error));
-    }, [setScans, setSelectedScan]);
+    useEffect(loadScans, [loadScans]);
 
-    useEffect(loadScans, []);
+    useEffect(() => {
+        if (response && response.scans.length > 0)
+            setSelectedScan(response.scans[0]);
+        else if (error)
+            alert(`Ошибка при загрузке списка: ${error}`);
+    }, [response, error]);
+
+    if (isLoading && !response)
+        return <div className="loading"/>;
 
     // ------------
 
@@ -32,7 +31,7 @@ function App() {
         <main className="container">
             <div className="columns">
                 <div className="column col-3" id="column-left">
-                    <ScansList scans={scans} loadScans={loadScans}
+                    <ScansList scans={response?.scans} loadScans={loadScans}
                            selectedScan={selectedScan} selectScan={setSelectedScan}
                     />
                 </div>

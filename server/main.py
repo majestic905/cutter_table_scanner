@@ -1,12 +1,15 @@
+import json
 from datetime import datetime
 from http import HTTPStatus as status
 from flask import request
 
+from settings import get_settings, save_settings
+from cameras import update_cameras
 from scan import Scan
 from scanner import Scanner
 from server.constants.enums import ScanFile, ScanType, ImageLevel
 from app import app
-from cameras import read_cameras_data, update_cameras_data
+
 
 
 
@@ -44,7 +47,12 @@ def get_scans():
 
 @app.route('/api/scans', methods=['POST'])
 def post_scans():
-    scan = Scan.new(ScanType.SNAPSHOT)
+    try:
+        scan_type = ScanType[request.args.get('type')]
+    except KeyError:
+        return {'message': 'Wrong `type` value'}, status.BAD_REQUEST
+
+    scan = Scan.new(scan_type)
     scanner = Scanner(scan)
     scanner.perform()
     return '', status.OK
@@ -56,23 +64,27 @@ def delete_scans():
     return '', status.NO_CONTENT
 
 
-@app.route('/api/cameras', methods=['GET'])
-def get_cameras_data():
-    return read_cameras_data()
+############
 
 
-@app.route('/api/cameras', methods=['POST'])
-def post_cameras_data():
-    update_cameras_data(request.json)
+@app.route('/api/settings', methods=['GET'])
+def get_settings_handle():
+    return get_settings()
+
+
+@app.route('/api/settings', methods=['POST'])
+def post_settings():
+    try:
+        save_settings(request.json)
+    except Exception as error:
+        print(error)
+        return {'message': 'Bad JSON'}, status.BAD_REQUEST
+
+    update_cameras()
     return '', status.OK
 
 
-# @app.route('/api/cameras/projection_points/calibrate', methods=['POST'])
-# def camera_projection_points_calibrate():
-#     scan = Scan.new(ScanType.CALIBRATION)
-#     scanner = Scanner(scan)
-#     scanner.perform()
-#     return '', status.OK
+############
 
 
 @app.route('/', methods=['GET'])
