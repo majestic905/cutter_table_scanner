@@ -28,11 +28,14 @@ const useFetch = (url) => {
                 setResponse(json);
                 setIsLoading(false);
             } catch (error) {
-                if (error.name === 'AbortError')
-                    return;
-
-                setError(error.message);
-                setIsLoading(false);
+                if (error.name === 'HTTPError') {
+                    const json = await error.response.json();
+                    setError(json.message);
+                    setIsLoading(false);
+                } else if (error.name !== 'AbortError') {
+                    setError(error.message);
+                    setIsLoading(false);
+                }
             }
         }();
 

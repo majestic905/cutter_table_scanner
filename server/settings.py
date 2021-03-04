@@ -1,13 +1,20 @@
 import json
-import shutil
-import os
+from jsonschema import validate, ValidationError
+from server.constants.paths import SETTINGS_FILE_PATH, SETTINGS_SCHEMA_PATH
 
-from server.constants.paths import SETTINGS_FILE_PATH
+
+def _read_schema():
+    with open(SETTINGS_SCHEMA_PATH) as file:
+        return json.load(file)
 
 
 def _read_settings():
     with open(SETTINGS_FILE_PATH) as file:
         return json.load(file)
+
+
+def get_settings():
+    return _settings
 
 
 def save_settings(new_settings: dict):
@@ -18,8 +25,14 @@ def save_settings(new_settings: dict):
         json.dump(new_settings, file, indent=4)
 
 
-def get_settings():
-    return _settings
+def validate_settings(json: dict):
+    try:
+        validate(json, _schema)
+    except ValidationError as error:
+        path = list(error.path)
+        path = path[0] + "".join([f'[{str(item)}]' for item in path[1:]])
+        return f'ERROR — {path}: {error.message}'
 
 
 _settings = _read_settings()
+_schema = _read_schema()

@@ -1,0 +1,66 @@
+{
+  "definitions": {
+    "point":  {
+      "type": "array",
+      "items": [
+        { "type": "integer", "minimum": 0 },
+        { "type": "integer", "minimum": 0 }
+      ]
+    },
+
+    "camera": {
+      "type": "object",
+      "required": ["maker", "model", "usb_port", "projection_points"],
+      "properties": {
+        "maker": { "type": "string" },
+        "model": { "type": "string" },
+        "usb_port": { "type": "string" },
+        "projection_points": {
+          "type": "object",
+          "required": ["LU", "LL", "RL", "RU"],
+          "properties": {
+            "LU": { "$ref": "#/definitions/point" },
+            "LL": { "$ref": "#/definitions/point" },
+            "RL": { "$ref": "#/definitions/point" },
+            "RU": { "$ref": "#/definitions/point" }
+          }
+        }
+      }
+    }
+  },
+
+  "type": "object",
+  "required": ["cameras", "table_sizes", "image_sizes"],
+  "properties": {
+    "cameras": {
+      "type": "object",
+      "required": ["LU", "LL", "RL", "RU"],
+      "properties": {
+        "LU": { "$ref": "#/definitions/camera" },
+        "LL": { "$ref": "#/definitions/camera" },
+        "RL": { "$ref": "#/definitions/camera" },
+        "RU": { "$ref": "#/definitions/camera" }
+      }
+    },
+    "table_sizes": {
+      "type": "object",
+      "required": ["LU", "LL", "RL", "RU"],
+      "properties":{
+        "LU": { "$ref": "#/definitions/point" },
+        "LL": { "$ref": "#/definitions/point" },
+        "RL": { "$ref": "#/definitions/point" },
+        "RU": { "$ref": "#/definitions/point" }
+      }
+    },
+    "image_sizes": {
+      "type": "object",
+      "required": ["LU", "LL", "RL", "RU"],
+      "properties": {
+        "LU": { "$ref": "#/definitions/point" },
+        "LL": { "$ref": "#/definitions/point" },
+        "RL": { "$ref": "#/definitions/point" },
+        "RU": { "$ref": "#/definitions/point" }
+      }
+    }
+  }
+}

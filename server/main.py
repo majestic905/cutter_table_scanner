@@ -3,7 +3,7 @@ from datetime import datetime
 from http import HTTPStatus as status
 from flask import request
 
-from settings import get_settings, save_settings
+from settings import get_settings, save_settings, validate_settings
 from cameras import update_cameras
 from scan import Scan
 from scanner import Scanner
@@ -11,6 +11,9 @@ from server.constants.enums import ScanFile, ScanType, ImageLevel
 from app import app
 
 
+@app.errorhandler(404)
+def resource_not_found(e):
+    return {"message": str(e)}, 404
 
 
 @app.route('/api/scans', methods=['GET'])
@@ -52,9 +55,9 @@ def post_scans():
     except KeyError:
         return {'message': 'Wrong `type` value'}, status.BAD_REQUEST
 
-    # scan = Scan.new(scan_type)
-    # scanner = Scanner(scan)
-    # scanner.perform()
+    scan = Scan.new(scan_type)
+    scanner = Scanner(scan)
+    scanner.perform()
     return '', status.NO_CONTENT
 
 
@@ -74,13 +77,13 @@ def get_settings_handle():
 
 @app.route('/api/settings', methods=['POST'])
 def post_settings():
-    try:
-        save_settings(request.json)
-    except Exception as error:
-        print(error)
-        return {'message': 'Bad JSON'}, status.BAD_REQUEST
+    error_msg = validate_settings(request.json)
+    if error_msg is not None:
+        return {'message': error_msg}, status.BAD_REQUEST
 
+    save_settings(request.json)
     update_cameras()
+
     return '', status.NO_CONTENT
 
 
