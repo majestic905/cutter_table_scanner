@@ -52,10 +52,10 @@ def post_scans():
     except KeyError:
         return {'message': 'Wrong `type` value'}, status.BAD_REQUEST
 
-    scan = Scan.new(scan_type)
-    scanner = Scanner(scan)
-    scanner.perform()
-    return '', status.OK
+    # scan = Scan.new(scan_type)
+    # scanner = Scanner(scan)
+    # scanner.perform()
+    return '', status.NO_CONTENT
 
 
 @app.route('/api/scans', methods=['DELETE'])
@@ -81,7 +81,7 @@ def post_settings():
         return {'message': 'Bad JSON'}, status.BAD_REQUEST
 
     update_cameras()
-    return '', status.OK
+    return '', status.NO_CONTENT
 
 
 ############

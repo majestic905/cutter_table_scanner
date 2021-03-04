@@ -19,14 +19,14 @@ function getIndentedJSON(json, space = 4) {
 const SettingsModal = ({closeModal}) => {
     const [data, setData] = useState();
 
-    const [{isLoading, response, error}, doFetch] = useFetch('/api/settings');  // for both get and post
+    const [{isLoading, response, error}, doFetch] = useFetch('/api/settings');  // for both GET and POST
 
     useEffect(doFetch, [doFetch]);
 
     useEffect(() => {
-        if (response && !data) {
+        if (response !== undefined && !data) { // GET
             setData(getIndentedJSON(response));
-        } else if (response && data)
+        } else if (response !== undefined && data) // POST
             closeModal();
     }, [response, setData, closeModal]);
 
@@ -41,8 +41,6 @@ const SettingsModal = ({closeModal}) => {
     }, [doFetch]);
 
     const btnClassName = cx("btn btn-primary float-right mr-2", {loading: isLoading});
-
-    console.log(data);
 
     return (
         <form className="modal active" id="settings-modal" onSubmit={doSubmit}>

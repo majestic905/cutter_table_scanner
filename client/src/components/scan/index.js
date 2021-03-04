@@ -12,7 +12,7 @@ const Scan = ({loadScans, selectedScan}) => {
     const [{isLoading, response, error}, doFetch] = useFetch('/api/scans');
 
     const requestScan = useCallback(type => {
-        doFetch({method: 'POST'}, `type=${type}`);
+        doFetch({method: 'POST', searchParams: {type}});
     }, [doFetch]);
 
     useEffect(() => {
@@ -29,11 +29,11 @@ const Scan = ({loadScans, selectedScan}) => {
     return (
         <div id="scan">
             <header>
-                <button className="btn btn-sm btn-primary mr-2" onClick={requestScan}>
+                <button className="btn btn-sm btn-primary mr-2" onClick={() => requestScan('SNAPSHOT')}>
                     Полный скан
                 </button>
 
-                <button className="btn btn-sm btn-primary mr-2" onClick={requestScan}>
+                <button className="btn btn-sm btn-primary mr-2" onClick={() => requestScan('CALIBRATION')}>
                     Калибровка точек
                 </button>
 
