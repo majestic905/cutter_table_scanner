@@ -2,7 +2,6 @@ import traceback
 import sys
 import os.path
 import cv2
-from pyexiv2 import Image
 
 from scan import Scan
 from cameras import get_cameras
@@ -24,20 +23,6 @@ def persist_images(paths: PathsType, images: ImagesType):
         persist_image(paths[key], images[key])
 
 
-def read_exif_data(paths: PathsType):
-    exif_data = {}
-
-    for position, file_path in paths.items():
-        with Image(file_path) as img:
-            data = img.read_exif()
-            exif_data[position] = {
-                'focal_length': eval(data['Exif.Photo.FocalLength']),  # eval('3520/1000')
-                'aperture': eval(data['Exif.Photo.FNumber'])  # eval('180/100')
-            }
-
-    return exif_data
-
-
 class Scanner:
     def __init__(self, scan: Scan, cameras: CamerasType = get_cameras()):
         self.scan = scan
@@ -55,35 +40,36 @@ class Scanner:
             camera.capture_to_path(paths[position])
             self.log(f'Capture END, {position.value}, {repr(camera)}')
 
-    def build_undistorted_images(self, images: ImagesType, exif: ExifType, cameras: CamerasType):
+    def build_undistorted_images(self, images: ImagesType, cameras: CamerasType):
         self.log('Building undistorted images...')
-        return {position: undistort(images[position], exif[position], cameras[position]) for position in cameras}
+        return {position: undistort(images[position], cameras[position]) for position in cameras}
 
     def build_projected_images(self, images: ImagesType, cameras: CamerasType):
         self.log('Building projected images...')
         return {position: project(images[position], cameras[position]) for position in cameras}
 
-    def build_result(self, images: ImagesType):
+    def resize_images(self, cameras: CamerasType):
+        pass
+
+    def build_result(self, images: ImagesType, cameras: CamerasType):
         self.log('Building result image...')
-
-        src_path = os.path.join(__file__, '..', 'eggs', 'sample_scan', ScanFile.RESULT.value)
-        return cv2.imread(src_path)
-
-        # return compose(images)
+        return compose(images)
+        # src_path = os.path.join(__file__, '..', '..', 'eggs', 'sample_scan', ScanFile.RESULT.value)
+        # return cv2.imread(src_path)
 
     def make_snapshot(self):
         try:
             self.scan.setup_logger()
             paths, images = self.scan.paths, self.scan.images
 
-            self.capture_photos(paths[ImageLevel.ORIGINAL], cameras)
+            self.capture_photos(paths[ImageLevel.ORIGINAL], self.cameras)
             images[ImageLevel.ORIGINAL] = read_images(paths[ImageLevel.ORIGINAL])
 
-            exif = read_exif_data(paths[ImageLevel.ORIGINAL])
-            images[ImageLevel.UNDISTORTED] = self.build_undistorted_images(images[ImageLevel.ORIGINAL], exif, cameras)
+            # exif = read_exif_data(paths[ImageLevel.ORIGINAL])
+            images[ImageLevel.UNDISTORTED] = self.build_undistorted_images(images[ImageLevel.ORIGINAL], self.cameras)
             persist_images(paths[ImageLevel.UNDISTORTED], images[ImageLevel.UNDISTORTED])
 
-            images[ImageLevel.PROJECTED] = self.build_projected_images(images[ImageLevel.UNDISTORTED], cameras)
+            images[ImageLevel.PROJECTED] = self.build_projected_images(images[ImageLevel.UNDISTORTED], self.cameras)
             persist_images(paths[ImageLevel.PROJECTED], images[ImageLevel.PROJECTED])
 
             result_image = self.build_result(images[ImageLevel.PROJECTED])

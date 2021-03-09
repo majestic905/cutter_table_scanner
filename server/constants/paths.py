@@ -45,7 +45,7 @@ def _copy_lensfun_xml_to_system_user():
     if not os.path.exists(lf_dir_path):
         os.mkdir(lf_dir_path)
 
-    cameras_file = os.path.join(lf_dir_path, 'cameras.xml')
+    cameras_file = os.path.join(lf_dir_path, 'cutter_table_scanner.xml')
 
     if not os.path.exists(cameras_file):
         shutil.copy(_DEFAULT_CAMERAS_XML_PATH, cameras_file)

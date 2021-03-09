@@ -20,4 +20,30 @@
         </calibration>
     </lens>
 
+    <camera>
+        <maker>Nikon</maker>
+        <model>Fake Camera</model>
+        <mount>fakeNikon</mount>
+        <cropfactor>4.843</cropfactor>
+    </camera>
+
+    <lens>
+        <maker>Nikon</maker>
+        <model>Fake Camera Lens</model>
+        <model lang="en">fixed lens</model>
+        <model lang="de">festes Objektiv</model>
+        <mount>fakeNikon</mount>
+        <cropfactor>4.843</cropfactor>
+        <aspect-ratio>4:3</aspect-ratio>
+        <calibration>
+            <distortion model="ptlens" focal="7.094" a="0.007715" b="-0.026731" c="0"/>
+            <distortion model="ptlens" focal="8.625" a="0.002869" b="-0.017441" c="0"/>
+            <distortion model="ptlens" focal="10.313" a="-0.002159" b="-0.005133" c="0"/>
+            <distortion model="ptlens" focal="12.281" a="-0.000263" b="-0.008304" c="0"/>
+            <distortion model="ptlens" focal="14.719" a="-0.000643" b="-0.004951" c="0"/>
+            <distortion model="ptlens" focal="17.5" a="-0.000855" b="-0.00274" c="0"/>
+            <distortion model="ptlens" focal="21.313" a="-0.001024" b="-0.001516" c="0"/>
+        </calibration>
+    </lens>
+
 </lensdatabase>
