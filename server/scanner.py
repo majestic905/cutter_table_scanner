@@ -1,6 +1,5 @@
 import traceback
 import sys
-import os.path
 import cv2
 
 from scan import Scan
@@ -23,80 +22,67 @@ def persist_images(paths: PathsType, images: ImagesType):
         persist_image(paths[key], images[key])
 
 
-class Scanner:
-    def __init__(self, scan: Scan, cameras: CamerasType = get_cameras()):
-        self.scan = scan
-        self.cameras = cameras
+def capture_photos(paths: PathsType, cameras: CamerasType):
+    for position, camera in cameras.items():
+        # scan.log(f'Capture START, {position.value}, {repr(camera)}')
+        camera.capture_to_path(paths[position])
+        # scan.log(f'Capture END, {position.value}, {repr(camera)}')
 
-        if set(cameras.keys()) != set(CameraPosition):
-            raise ValueError('`cameras` dict must have all items from CameraPosition as keys')
 
-    def log(self, *args, **kwargs):
-        self.scan.log(*args, **kwargs)
+def build_undistorted_images(images: ImagesType, cameras: CamerasType):
+    # scan.log('Building undistorted images...')
+    return {position: undistort(images[position], cameras[position]) for position in cameras}
 
-    def capture_photos(self, paths: PathsType, cameras: CamerasType):
-        for position, camera in cameras.items():
-            self.log(f'Capture START, {position.value}, {repr(camera)}')
-            camera.capture_to_path(paths[position])
-            self.log(f'Capture END, {position.value}, {repr(camera)}')
 
-    def build_undistorted_images(self, images: ImagesType, cameras: CamerasType):
-        self.log('Building undistorted images...')
-        return {position: undistort(images[position], cameras[position]) for position in cameras}
+def build_projected_images(images: ImagesType, cameras: CamerasType):
+    # scan.log('Building projected images...')
+    return {position: project(images[position], cameras[position]) for position in cameras}
 
-    def build_projected_images(self, images: ImagesType, cameras: CamerasType):
-        self.log('Building projected images...')
-        return {position: project(images[position], cameras[position]) for position in cameras}
 
-    def resize_images(self, cameras: CamerasType):
-        pass
+def build_result(images: ImagesType):
+    # scan.log('Building result image...')
+    return compose(images)
 
-    def build_result(self, images: ImagesType, cameras: CamerasType):
-        self.log('Building result image...')
-        return compose(images)
-        # src_path = os.path.join(__file__, '..', '..', 'eggs', 'sample_scan', ScanFile.RESULT.value)
-        # return cv2.imread(src_path)
 
-    def make_snapshot(self):
-        try:
-            self.scan.setup_logger()
-            paths, images = self.scan.paths, self.scan.images
+def build_snapshot():
+    scan = SnapshotScan()
+    cameras = get_cameras()
 
-            self.capture_photos(paths[ImageLevel.ORIGINAL], self.cameras)
-            images[ImageLevel.ORIGINAL] = read_images(paths[ImageLevel.ORIGINAL])
+    try:
+        scan.setup_logger()
+        paths, images = scan.paths, scan.images
 
-            # exif = read_exif_data(paths[ImageLevel.ORIGINAL])
-            images[ImageLevel.UNDISTORTED] = self.build_undistorted_images(images[ImageLevel.ORIGINAL], self.cameras)
-            persist_images(paths[ImageLevel.UNDISTORTED], images[ImageLevel.UNDISTORTED])
+        capture_photos(paths['original'], cameras)
 
-            images[ImageLevel.PROJECTED] = self.build_projected_images(images[ImageLevel.UNDISTORTED], self.cameras)
-            persist_images(paths[ImageLevel.PROJECTED], images[ImageLevel.PROJECTED])
+        images['original'] = read_images(paths['original'])
+        images['undistorted'] = build_undistorted_images(images['original'], cameras)
+        images['projected'] = build_projected_images(images['undistorted'], cameras)
+        images['result'] = build_result(images['projected'])
 
-            result_image = self.build_result(images[ImageLevel.PROJECTED])
-            result_image_path = self.scan.path_for(ScanFile.RESULT)
-            persist_image(result_image_path, result_image)
-        except Exception:
-            self.log(f'Exception occurred\n\n{traceback.print_exception(*sys.exc_info())}')
-        finally:
-            self.scan.cleanup_logger()
+        persist_images(paths['undistorted'], images['undistorted'])
+        persist_images(paths['projected'], images['projected'])
+        persist_image(paths['result'], images['result'])
+    except Exception:
+        scan.log(f'Exception occurred\n\n{traceback.print_exception(*sys.exc_info())}')
+    finally:
+        scan.cleanup_logger()
 
-    def make_calibration_images(self):
-        try:
-            self.scan.setup_logger()
-            paths, images = self.scan.paths, self.scan.images
 
-            self.capture_photos(paths[ImageLevel.ORIGINAL], self.cameras)
-            images[ImageLevel.ORIGINAL] = read_images(paths[ImageLevel.ORIGINAL])
+def build_calibration():
+    scan = CalibrationScan()
+    cameras = get_cameras()
 
-            images[ImageLevel.UNDISTORTED] = self.build_undistorted_images(images[ImageLevel.ORIGINAL], self.cameras)
-            persist_images(paths[ImageLevel.UNDISTORTED], images[ImageLevel.UNDISTORTED])
-        except Exception:
-            self.log(f'Exception occurred\n\n{traceback.print_exception(*sys.exc_info())}')
-        finally:
-            self.scan.cleanup_logger()
+    try:
+        scan.setup_logger()
+        paths, images = scan.paths, scan.images
 
-    def perform(self):
-        if self.scan.type == ScanType.SNAPSHOT:
-            self.make_snapshot()
-        elif self.scan.type == ScanType.CALIBRATION:
-            self.make_calibration_images()
+        capture_photos(paths['original'], cameras)
+
+        images['original'] = read_images(paths['original'])
+        images['undistorted'] = build_undistorted_images(images['original'], cameras)
+
+        persist_images(paths['undistorted'], images['undistorted'])
+    except Exception:
+        scan.log(f'Exception occurred\n\n{traceback.print_exception(*sys.exc_info())}')
+    finally:
+        scan.cleanup_logger()
