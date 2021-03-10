@@ -5,9 +5,8 @@ from flask import request
 
 from settings import get_settings, save_settings, validate_settings
 from cameras import update_cameras
-from scan import Scan
-from scanner import Scanner
-from server.constants.enums import ScanFile, ScanType, ImageLevel
+from scan import Scan, ScanType
+from scanner import build_snapshot, build_calibration
 from app import app
 
 
@@ -22,28 +21,12 @@ def get_scans():
 
     for scan_id in Scan.ids():
         scan = Scan.find_by_id(scan_id, check_existence=False)
-
-        item = {
+        scans.append({
             'scanId': scan.id,
             'scanType': scan.type.name,  # it's important to send .name, see Scan.find_by_id
             'createdAt': datetime.fromtimestamp(int(scan.timestamp)).strftime('%d %B %Y, %H:%M'),
-            'images': {}
-        }
-
-        image_levels = ImageLevel.__members__.values()
-        if scan.type == ScanType.CALIBRATION:
-            image_levels = [ImageLevel.ORIGINAL, ImageLevel.UNDISTORTED]
-
-        images = {level: scan.urls_for_image_level(level) for level in image_levels}
-        for image_level in images:
-            item['images'][image_level.name] = {}
-            for camera_position in images[image_level]:
-                item['images'][image_level.name][camera_position.name] = images[image_level][camera_position]
-
-        if scan.type == ScanType.SNAPSHOT:
-            item['images'][ScanFile.RESULT.name] = scan.url_for(ScanFile.RESULT)
-
-        scans.append(item)
+            'images': scan.urls
+        })
 
     return {'scans': list(reversed(scans))}
 
@@ -51,13 +34,15 @@ def get_scans():
 @app.route('/api/scans', methods=['POST'])
 def post_scans():
     try:
-        scan_type = ScanType[request.args.get('type')]
+        scan_type = request.args.get('type')
     except KeyError:
         return {'message': 'Wrong `type` value'}, status.BAD_REQUEST
 
-    scan = Scan.new(scan_type)
-    scanner = Scanner(scan)
-    scanner.perform()
+    if scan_type == ScanType.SNAPSHOT:
+        build_snapshot()
+    elif scan_type == ScanType.CALIBRATION:
+        build_calibration()
+
     return '', status.NO_CONTENT
 
 

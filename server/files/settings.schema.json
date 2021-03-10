@@ -17,14 +17,16 @@
         "usb_port": { "type": "string" },
         "projection_points": {
           "type": "object",
-          "required": ["LU", "LL", "RL", "RU"],
+          "required": ["bottom_left", "bottom_right", "top_right", "top_left"],
           "properties": {
-            "LU": { "$ref": "#/definitions/point" },
-            "LL": { "$ref": "#/definitions/point" },
-            "RL": { "$ref": "#/definitions/point" },
-            "RU": { "$ref": "#/definitions/point" }
+            "bottom_left": { "$ref": "#/definitions/point" },
+            "bottom_right": { "$ref": "#/definitions/point" },
+            "top_right": { "$ref": "#/definitions/point" },
+            "top_left": { "$ref": "#/definitions/point" }
           }
-        }
+        },
+        "projection_image_size": { "$ref": "#/definitions/point" },
+        "real_size": { "$ref": "#/definitions/point" }
       }
     }
   },
@@ -40,26 +42,6 @@
         "LL": { "$ref": "#/definitions/camera" },
         "RL": { "$ref": "#/definitions/camera" },
         "RU": { "$ref": "#/definitions/camera" }
-      }
-    },
-    "table_sizes": {
-      "type": "object",
-      "required": ["LU", "LL", "RL", "RU"],
-      "properties":{
-        "LU": { "$ref": "#/definitions/point" },
-        "LL": { "$ref": "#/definitions/point" },
-        "RL": { "$ref": "#/definitions/point" },
-        "RU": { "$ref": "#/definitions/point" }
-      }
-    },
-    "image_sizes": {
-      "type": "object",
-      "required": ["LU", "LL", "RL", "RU"],
-      "properties": {
-        "LU": { "$ref": "#/definitions/point" },
-        "LL": { "$ref": "#/definitions/point" },
-        "RL": { "$ref": "#/definitions/point" },
-        "RU": { "$ref": "#/definitions/point" }
       }
     }
   }

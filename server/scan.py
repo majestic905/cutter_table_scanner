@@ -1,29 +1,40 @@
 import os.path
 import logging
 import shutil
-import numpy as np
+from enum import Enum
 from datetime import datetime
 from typing import Optional
 from flask import url_for as flask_url_for
 
+from cameras import CameraPosition
 from server.constants.paths import SCANS_DIR_PATH, SETTINGS_FILE_PATH
-from server.constants.enums import ScanType, ScanFile, ImageLevel, CameraPosition
 
 
 DEFAULT_LOGGER = logging.getLogger(__name__)
 
 
-class Scan:
-    def __init__(self, timestamp: Optional[str], scan_type: ScanType, logger: logging.Logger = None, **kwargs):
-        self.timestamp = timestamp or str(int(datetime.now().timestamp()))
-        self.type = scan_type
+class ScanType(Enum):
+    SNAPSHOT = 'snapshot'
+    CALIBRATION = 'calibration'
 
+
+class Scan:
+    def __init__(self, scan_type: ScanType, timestamp: Optional[str] = None, logger: logging.Logger = None, **kwargs):
         self.logger = logger or DEFAULT_LOGGER
         self.logger_handler = None
 
+        self.type = scan_type
+        self.timestamp = timestamp or str(int(datetime.now().timestamp()))
+
     @staticmethod
     def new(scan_type: ScanType):
-        scan = Scan(None, scan_type)
+        if scan_type == ScanType.SNAPSHOT:
+            scan = SnapshotScan()
+        elif scan_type == ScanType.CALIBRATION:
+            scan = CalibrationScan()
+        else:
+            raise ValueError('Unknown (or None) scan_type value')
+
         os.mkdir(scan.root_directory)
         shutil.copy(SETTINGS_FILE_PATH, scan.root_directory)
         return scan
@@ -38,6 +49,15 @@ class Scan:
                 raise FileNotFoundError(f'Scan with id=`{scan_id}` does not exist')
 
         return scan
+
+    @staticmethod
+    def ids():
+        return os.listdir(SCANS_DIR_PATH)
+
+    @staticmethod
+    def delete_all():
+        shutil.rmtree(SCANS_DIR_PATH)
+        os.mkdir(SCANS_DIR_PATH)
 
     #########
 
@@ -63,69 +83,43 @@ class Scan:
     def root_directory(self):
         return os.path.join(SCANS_DIR_PATH, self.id)
 
-    def url_for(self, scan_file: ScanFile):
-        return flask_url_for('static', filename=f'data/scans/{self.id}/{scan_file.value}')
-
-    def urls_for_image_level(self, level: ImageLevel):
-        return {position: self.url_for(ScanFile.image(position, level)) for position in CameraPosition}
-
     #########
 
-    @staticmethod
-    def ids():
-        return os.listdir(SCANS_DIR_PATH)
+    def image_filename_for(self, name: str, position: CameraPosition = None):
+        return f'{name}.jpg' if position is None else f'{position.value}_{name}.jpg'
 
-    @staticmethod
-    def delete_all():
-        shutil.rmtree(SCANS_DIR_PATH)
-        os.mkdir(SCANS_DIR_PATH)
+    def path_for(self, name: str, position: CameraPosition = None):
+        filename = self.image_filename_for(name, position)
+        return os.path.join(self.root_directory, filename)
 
-
-class Images:
-    def __init__(self, name):
-        self.name = name
-        self.images = dict.fromkeys(CameraPosition)
-
-    def filename_for(self, position: CameraPosition):
-        return f'{position.value}_{self.name}.jpg'
-
-    def __getitem__(self, position: CameraPosition):
-        return self.images[position]
-
-    def __setitem__(self, position: CameraPosition, image: np.ndarray):
-        self.images[position] = image
-
+    def url_for(self, name: str, position: CameraPosition = None):
+        filename = self.image_filename_for(name, position)
+        return flask_url_for('static', filename=f'data/scans/{self.id}/{filename}')
 
 
 class SnapshotScan(Scan):
-    def __init__(self, timestamp: Optional[str], scan_type: ScanType, *args, **kwargs):
-        super().__init__(timestamp, scan_type, **kwargs)
+    def __init__(self, timestamp: Optional[str] = None, **kwargs):
+        super().__init__(ScanType.SNAPSHOT, timestamp, **kwargs)
 
         self.images = {'result': None}
-        self.paths = {'result': os.path.join(self.root_directory, 'result.jog')}
+        self.paths = {'result': self.path_for('result')}
+        self.urls = {'result': self.url_for('result')}
 
         for name in ['original', 'undistorted', 'projected']:
             self.images[name] = dict.fromkeys(CameraPosition)
             self.paths[name] = {self.path_for(name, position) for position in CameraPosition}
-
-    def image_filename_for(self, name: str, position: CameraPosition = None):
-        return 'result.jpg' if position is None else f'{position.value}_{name}.jpg'
-
-    def path_for(self, name: str, position: CameraPosition):
-        return os.path.join(self.root_directory, self.image_filename_for(name, position))
-
-    def url_for(self, scan_file: ScanFile):
-        return flask_url_for('static', filename=f'data/scans/{self.id}/{scan_file.value}')
+            self.urls[name] = {self.url_for(name, position) for position in CameraPosition}
 
 
 class CalibrationScan(Scan):
-    def __init__(self, timestamp: Optional[str], scan_type: ScanType, *args, **kwargs):
-        super().__init__(timestamp, scan_type, **kwargs)
+    def __init__(self, timestamp: Optional[str] = None, **kwargs):
+        super().__init__(ScanType.CALIBRATION, timestamp, **kwargs)
 
-        self.images, self.paths = {}, {}
+        self.images = {}
+        self.paths = {}
+        self.urls = {}
+
         for name in ['original', 'undistorted']:
             self.images[name] = dict.fromkeys(CameraPosition)
-            self.paths[name] = {self.path_for(position, name) for position in CameraPosition}
-
-    def path_for(self, position: CameraPosition, name: str):
-        return os.path.join(self.root_directory, f'{position.value}_{name}.jpg')
+            self.paths[name] = {self.path_for(name, position) for position in CameraPosition}
+            self.urls[name] = {self.url_for(name, position) for position in CameraPosition}

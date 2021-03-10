@@ -1,10 +1,9 @@
 import os
 import shutil
 from server.app import app
-from server.constants.enums import ScanFile, CameraPosition
 
 DATA_DIR_PATH = os.path.join(app.static_folder, 'data')
-SETTINGS_FILE_PATH = os.path.join(DATA_DIR_PATH, ScanFile.SETTINGS.value)
+SETTINGS_FILE_PATH = os.path.join(DATA_DIR_PATH, 'settings.json')
 SETTINGS_SCHEMA_PATH = os.path.join(app.root_path, 'files', 'settings.schema.json')
 SCANS_DIR_PATH = os.path.join(DATA_DIR_PATH, 'scans')
 

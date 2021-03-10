@@ -2,11 +2,11 @@ import traceback
 import sys
 import cv2
 
-from scan import Scan
+from settings import get_settings
 from cameras import get_cameras
+from scan import SnapshotScan, CalibrationScan
 from processing import undistort, project, compose
 from server.constants.custom_types import ImagesType, CamerasType, PathsType, ExifType
-from server.constants.enums import CameraPosition, ImageLevel, ScanFile, ScanType
 
 
 def read_images(paths: PathsType):
@@ -36,7 +36,12 @@ def build_undistorted_images(images: ImagesType, cameras: CamerasType):
 
 def build_projected_images(images: ImagesType, cameras: CamerasType):
     # scan.log('Building projected images...')
-    return {position: project(images[position], cameras[position]) for position in cameras}
+    image_sizes = get_settings()['image_sizes']
+
+    return {
+        position: project(images[position], cameras[position], image_sizes[position.name])
+        for position in cameras
+    }
 
 
 def build_result(images: ImagesType):

@@ -1,16 +1,30 @@
 import os.path
 import shutil
-
+import enum
+import lensfunpy
 import settings
-from server.constants.enums import CameraPosition
+
+
+class CameraPosition(enum.Enum):
+    LU = 'left_upper'
+    RU = 'right_upper'
+    RL = 'right_lower'
+    LL = 'left_lower'
 
 
 class Camera:
-    def __init__(self, usb: str, maker: str, model: str, projection_points=None):
-        self.usb = usb
-        self.maker = maker
-        self.model = model
-        self.projection_points = projection_points
+    def __init__(self, data: dict):
+        self.usb = data['usb']
+        self.maker = data['maker']
+        self.model = data['model']
+        self.projection_image_size = data['projection_image_size']
+        self.projection_points = data['projection_points']
+        self.get_lensfun_handlers()
+
+    def get_lensfun_handlers(self):
+        db = lensfunpy.Database()
+        self.lf_cam = db.find_cameras(self.maker, self.model)[0]
+        self.lf_lens = db.find_lenses(self.lf_cam)[0]
 
     def capture_to_path(self, path):
         src_path = os.path.join(os.path.dirname(__file__), 'files', 'demo', os.path.basename(path))
@@ -20,14 +34,9 @@ class Camera:
         return f'Camera({self.usb}, {self.maker}, {self.model})'
 
 
-def _create_camera(data: dict):
-    projection_points = {CameraPosition[key]: value for key, value in data['projection_points'].items()}
-    return Camera(data['usb_port'], data['maker'], data['model'], projection_points=projection_points)
-
-
 def _create_cameras():
     cameras_data = settings.get_settings()['cameras']
-    return {CameraPosition[key]: _create_camera(data) for key, data in cameras_data.items()}
+    return {CameraPosition[key]: Camera(data) for key, data in cameras_data.items()}
 
 
 _cameras = _create_cameras()
