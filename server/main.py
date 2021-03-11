@@ -5,8 +5,8 @@ from flask import request
 
 from settings import get_settings, save_settings, validate_settings
 from cameras import update_cameras
-from scan import Scan, ScanType
-from scanner import build_snapshot, build_calibration
+from scan import Scan
+from scanner import build_scan
 from app import app
 
 
@@ -17,16 +17,14 @@ def resource_not_found(e):
 
 @app.route('/api/scans', methods=['GET'])
 def get_scans():
-    scans = []
-
-    for scan_id in Scan.ids():
-        scan = Scan.find_by_id(scan_id, check_existence=False)
-        scans.append({
+    scans = [
+        {
             'scanId': scan.id,
             'scanType': scan.type.name,  # it's important to send .name, see Scan.find_by_id
             'createdAt': datetime.fromtimestamp(int(scan.timestamp)).strftime('%d %B %Y, %H:%M'),
             'images': scan.urls
-        })
+        } for scan in Scan.all()
+    ]
 
     return {'scans': list(reversed(scans))}
 
@@ -35,13 +33,9 @@ def get_scans():
 def post_scans():
     try:
         scan_type = request.args.get('type')
-    except KeyError:
+        build_scan(scan_type)
+    except TypeError:
         return {'message': 'Wrong `type` value'}, status.BAD_REQUEST
-
-    if scan_type == ScanType.SNAPSHOT:
-        build_snapshot()
-    elif scan_type == ScanType.CALIBRATION:
-        build_calibration()
 
     return '', status.NO_CONTENT
 

@@ -9,7 +9,7 @@ def undistort(image: np.ndarray, camera: Camera):
     height, width = image.shape[0], image.shape[1]
 
     mod = lensfunpy.Modifier(camera.lf_lens, camera.lf_cam.crop_factor, width, height)
-    mod.initialize(camera.lf_lens.min_focal, 0, 0)  # aperture and focus distance
+    mod.initialize(camera.lf_lens.min_focal, 0, 0)  # aperture and focus distance are not used for distortion
 
     undist_coords = mod.apply_geometry_distortion()
     return cv2.remap(image, undist_coords, None, cv2.INTER_LANCZOS4)

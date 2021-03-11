@@ -17,6 +17,13 @@ class ScanType(Enum):
     SNAPSHOT = 'snapshot'
     CALIBRATION = 'calibration'
 
+    @property
+    def get_class(self):
+        if self == ScanType.CALIBRATION:
+            return CalibrationScan
+        elif self == ScanType.SNAPSHOT:
+            return SnapshotScan
+
 
 class Scan:
     def __init__(self, scan_type: ScanType, timestamp: Optional[str] = None, logger: logging.Logger = None, **kwargs):
@@ -26,33 +33,21 @@ class Scan:
         self.type = scan_type
         self.timestamp = timestamp or str(int(datetime.now().timestamp()))
 
-    @staticmethod
-    def new(scan_type: ScanType):
-        if scan_type == ScanType.SNAPSHOT:
-            scan = SnapshotScan()
-        elif scan_type == ScanType.CALIBRATION:
-            scan = CalibrationScan()
-        else:
-            raise ValueError('Unknown (or None) scan_type value')
+        if timestamp is None:
+            os.mkdir(self.root_directory)
+            shutil.copy(SETTINGS_FILE_PATH, self.root_directory)
 
-        os.mkdir(scan.root_directory)
-        shutil.copy(SETTINGS_FILE_PATH, scan.root_directory)
-        return scan
+    def build(self):
+        raise NotImplementedError
+
+    #########
 
     @staticmethod
-    def find_by_id(scan_id: str, *, check_existence=True):
-        timestamp, scan_type = scan_id.split('_')
-        scan = Scan(timestamp, ScanType[scan_type])
-
-        if check_existence:
-            if not os.path.exists(scan.root_directory):
-                raise FileNotFoundError(f'Scan with id=`{scan_id}` does not exist')
-
-        return scan
-
-    @staticmethod
-    def ids():
-        return os.listdir(SCANS_DIR_PATH)
+    def all():
+        for scan_id in os.listdir(SCANS_DIR_PATH):
+            timestamp, scan_type = scan_id.split('_')
+            klass = ScanType[scan_type].get_class()
+            yield klass(timestamp)
 
     @staticmethod
     def delete_all():

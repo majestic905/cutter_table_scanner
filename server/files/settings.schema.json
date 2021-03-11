@@ -10,7 +10,7 @@
 
     "camera": {
       "type": "object",
-      "required": ["maker", "model", "usb_port", "projection_points"],
+      "required": ["maker", "model", "usb_port", "projection_points", "projection_image_size", "real_size"],
       "properties": {
         "maker": { "type": "string" },
         "model": { "type": "string" },

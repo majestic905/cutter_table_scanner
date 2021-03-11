@@ -2,9 +2,8 @@ import traceback
 import sys
 import cv2
 
-from settings import get_settings
 from cameras import get_cameras
-from scan import SnapshotScan, CalibrationScan
+from scan import SnapshotScan, CalibrationScan, ScanType
 from processing import undistort, project, compose
 from server.constants.custom_types import ImagesType, CamerasType, PathsType, ExifType
 
@@ -36,12 +35,7 @@ def build_undistorted_images(images: ImagesType, cameras: CamerasType):
 
 def build_projected_images(images: ImagesType, cameras: CamerasType):
     # scan.log('Building projected images...')
-    image_sizes = get_settings()['image_sizes']
-
-    return {
-        position: project(images[position], cameras[position], image_sizes[position.name])
-        for position in cameras
-    }
+    return {position: project(images[position], cameras[position]) for position in cameras}
 
 
 def build_result(images: ImagesType):
@@ -91,3 +85,12 @@ def build_calibration():
         scan.log(f'Exception occurred\n\n{traceback.print_exception(*sys.exc_info())}')
     finally:
         scan.cleanup_logger()
+
+
+def build_scan(scan_type: ScanType):
+    if scan_type == ScanType.SNAPSHOT:
+        build_snapshot()
+    elif scan_type == ScanType.CALIBRATION:
+        build_calibration()
+    else:
+        raise TypeError()

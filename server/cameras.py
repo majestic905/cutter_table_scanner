@@ -14,7 +14,7 @@ class CameraPosition(enum.Enum):
 
 class Camera:
     def __init__(self, data: dict):
-        self.usb = data['usb']
+        self.usb_port = data['usb_port']
         self.maker = data['maker']
         self.model = data['model']
         self.projection_image_size = data['projection_image_size']
