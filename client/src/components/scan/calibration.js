@@ -9,12 +9,12 @@ const Calibration = ({scan}) => {
     return (
         <div>
             <Tabs activeTab={activeTab} selectTab={selectTab}>
-                <Tab onClick={selectTab} name="original" text="Original" active={activeTab === "original"}/>
-                <Tab onClick={selectTab} name="undistorted" text="Undistorted" active={activeTab === "undistorted"}/>
+                <Tab onClick={selectTab} name="original" text="Original" isActive={activeTab === "original"}/>
+                <Tab onClick={selectTab} name="undistorted" text="Undistorted" isActive={activeTab === "undistorted"}/>
             </Tabs>
 
-            {activeTab === "original" && <ImagesGrid images={scan.images.ORIGINAL}/>}
-            {activeTab === "undistorted" && <ImagesGrid images={scan.images.UNDISTORTED}/>}
+            {activeTab === "original" && <ImagesGrid images={scan.images.original}/>}
+            {activeTab === "undistorted" && <ImagesGrid images={scan.images.undistorted}/>}
         </div>
     )
 }

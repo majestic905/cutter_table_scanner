@@ -2,10 +2,10 @@ import numpy as np
 import lensfunpy
 import cv2
 from cameras import Camera, CameraPosition
-from server.constants.custom_types import ImagesType
+from server.constants.custom_types import ImagesType, PathsType, CamerasType
 
 
-def undistort(image: np.ndarray, camera: Camera):
+def _undistort_image(image: np.ndarray, camera: Camera):
     height, width = image.shape[0], image.shape[1]
 
     mod = lensfunpy.Modifier(camera.lf_lens, camera.lf_cam.crop_factor, width, height)
@@ -15,7 +15,7 @@ def undistort(image: np.ndarray, camera: Camera):
     return cv2.remap(image, undist_coords, None, cv2.INTER_LANCZOS4)
 
 
-def project(image: np.ndarray, camera: Camera):
+def _project_image(image: np.ndarray, camera: Camera):
     points = camera.projection_points
     width, height = camera.projection_image_size
 
@@ -38,3 +38,32 @@ def compose(images: ImagesType):
 
     # vertically
     return np.concatenate((upper, lower), axis=0)
+
+
+def read_images(paths: PathsType):
+    return {position: cv2.imread(paths[position]) for position in paths}
+
+
+def persist_image(path, image):
+    cv2.imwrite(path, image)
+
+
+def persist_images(paths: PathsType, images: ImagesType):
+    for key in images:
+        persist_image(paths[key], images[key])
+
+
+def capture_photos(paths: PathsType, cameras: CamerasType):
+    for position, camera in cameras.items():
+        # scan.log(f'Capture START, {position.value}, {repr(camera)}')
+        camera.capture_to_path(paths[position])
+        # scan.log(f'Capture END, {position.value}, {repr(camera)}')
+
+def undistort(images: ImagesType, cameras: CamerasType):
+    # scan.log('Building undistorted images...')
+    return {position: _undistort_image(images[position], cameras[position]) for position in cameras}
+
+
+def project(images: ImagesType, cameras: CamerasType):
+    # scan.log('Building projected images...')
+    return {position: _project_image(images[position], cameras[position]) for position in cameras}

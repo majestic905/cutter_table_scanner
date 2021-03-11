@@ -1,12 +1,15 @@
 import os.path
 import logging
 import shutil
+import traceback
+import sys
 from enum import Enum
 from datetime import datetime
 from typing import Optional
 from flask import url_for as flask_url_for
 
-from cameras import CameraPosition
+from cameras import CameraPosition, get_cameras
+from processing import capture_photos, read_images, persist_images, persist_image, undistort, project, compose
 from server.constants.paths import SCANS_DIR_PATH, SETTINGS_FILE_PATH
 
 
@@ -17,7 +20,6 @@ class ScanType(Enum):
     SNAPSHOT = 'snapshot'
     CALIBRATION = 'calibration'
 
-    @property
     def get_class(self):
         if self == ScanType.CALIBRATION:
             return CalibrationScan
@@ -46,6 +48,7 @@ class Scan:
     def all():
         for scan_id in os.listdir(SCANS_DIR_PATH):
             timestamp, scan_type = scan_id.split('_')
+            # print(scan_type, ScanType[scan_type], ScanType[scan_type].get_class())
             klass = ScanType[scan_type].get_class()
             yield klass(timestamp)
 
@@ -91,10 +94,19 @@ class Scan:
         filename = self.image_filename_for(name, position)
         return flask_url_for('static', filename=f'data/scans/{self.id}/{filename}')
 
+    @property
+    def json_urls(self):
+        result = {}
+        for name, value in self.urls.items():
+            result[name] = value
+            if isinstance(value, dict):
+                result[name] = {position.name: url for position, url in value.items()}
+        return result
+
 
 class SnapshotScan(Scan):
-    def __init__(self, timestamp: Optional[str] = None, **kwargs):
-        super().__init__(ScanType.SNAPSHOT, timestamp, **kwargs)
+    def __init__(self, timestamp: Optional[str] = None, logger: logging.Logger = None, **kwargs):
+        super().__init__(ScanType.SNAPSHOT, timestamp, logger, **kwargs)
 
         self.images = {'result': None}
         self.paths = {'result': self.path_for('result')}
@@ -102,13 +114,35 @@ class SnapshotScan(Scan):
 
         for name in ['original', 'undistorted', 'projected']:
             self.images[name] = dict.fromkeys(CameraPosition)
-            self.paths[name] = {self.path_for(name, position) for position in CameraPosition}
-            self.urls[name] = {self.url_for(name, position) for position in CameraPosition}
+            self.paths[name] = {position: self.path_for(name, position) for position in CameraPosition}
+            self.urls[name] = {position: self.url_for(name, position) for position in CameraPosition}
+
+    def build(self):
+        cameras = get_cameras()
+
+        try:
+            self.setup_logger()
+            paths, images = self.paths, self.images
+
+            capture_photos(paths['original'], cameras)
+
+            images['original'] = read_images(paths['original'])
+            images['undistorted'] = undistort(images['original'], cameras)
+            images['projected'] = project(images['undistorted'], cameras)
+            images['result'] = compose(images['projected'])
+
+            persist_images(paths['undistorted'], images['undistorted'])
+            persist_images(paths['projected'], images['projected'])
+            persist_image(paths['result'], images['result'])
+        except Exception:
+            self.log(f'Exception occurred\n\n{traceback.print_exception(*sys.exc_info())}')
+        finally:
+            self.cleanup_logger()
 
 
 class CalibrationScan(Scan):
-    def __init__(self, timestamp: Optional[str] = None, **kwargs):
-        super().__init__(ScanType.CALIBRATION, timestamp, **kwargs)
+    def __init__(self, timestamp: Optional[str] = None, logger: logging.Logger = None, **kwargs):
+        super().__init__(ScanType.CALIBRATION, timestamp, logger, **kwargs)
 
         self.images = {}
         self.paths = {}
@@ -116,5 +150,23 @@ class CalibrationScan(Scan):
 
         for name in ['original', 'undistorted']:
             self.images[name] = dict.fromkeys(CameraPosition)
-            self.paths[name] = {self.path_for(name, position) for position in CameraPosition}
-            self.urls[name] = {self.url_for(name, position) for position in CameraPosition}
+            self.paths[name] = {position: self.path_for(name, position) for position in CameraPosition}
+            self.urls[name] = {position: self.url_for(name, position) for position in CameraPosition}
+
+    def build(self):
+        cameras = get_cameras()
+
+        try:
+            self.setup_logger()
+            paths, images = self.paths, self.images
+
+            capture_photos(paths['original'], cameras)
+
+            images['original'] = read_images(paths['original'])
+            images['undistorted'] = undistort(images['original'], cameras)
+
+            persist_images(paths['undistorted'], images['undistorted'])
+        except Exception:
+            self.log(f'Exception occurred\n\n{traceback.print_exception(*sys.exc_info())}')
+        finally:
+            self.cleanup_logger()

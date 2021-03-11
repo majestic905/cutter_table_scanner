@@ -23,7 +23,7 @@ function App() {
     }, [response, error]);
 
     if (isLoading && !response)
-        return <div className="loading"/>;
+        return <div className="loading mt-2"/>;
 
     // ------------
 

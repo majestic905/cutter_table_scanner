@@ -35,16 +35,16 @@ const Snapshot = ({scan}) => {
     return (
         <div>
             <Tabs activeTab={activeTab} selectTab={selectTab}>
-                <Tab onClick={selectTab} name="original" text="Original" active={activeTab === "original"}/>
-                <Tab onClick={selectTab} name="undistorted" text="Undistorted" active={activeTab === "undistorted"}/>
-                <Tab onClick={selectTab} name="projected" text="Projected" active={activeTab === "projected"}/>
-                <Tab onClick={selectTab} name="result" text="Result" active={activeTab === "result"}/>
+                <Tab onClick={selectTab} name="original" text="Original" isActive={activeTab === "original"}/>
+                <Tab onClick={selectTab} name="undistorted" text="Undistorted" isActive={activeTab === "undistorted"}/>
+                <Tab onClick={selectTab} name="projected" text="Projected" isActive={activeTab === "projected"}/>
+                <Tab onClick={selectTab} name="result" text="Result" isActive={activeTab === "result"}/>
             </Tabs>
 
-            {activeTab === "original" && <ImagesGrid images={scan.images.ORIGINAL}/>}
-            {activeTab === "undistorted" && <ImagesGrid images={scan.images.UNDISTORTED}/>}
-            {activeTab === "projected" && <ImagesGrid images={scan.images.PROJECTED}/>}
-            {activeTab === "result" && <ResultImage src={scan.images.RESULT} scanId={scan.scanId}/>}
+            {activeTab === "original" && <ImagesGrid images={scan.images.original}/>}
+            {activeTab === "undistorted" && <ImagesGrid images={scan.images.undistorted}/>}
+            {activeTab === "projected" && <ImagesGrid images={scan.images.projected}/>}
+            {activeTab === "result" && <ResultImage src={scan.images.result} scanId={scan.scanId}/>}
         </div>
     )
 }

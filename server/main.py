@@ -1,12 +1,10 @@
-import json
 from datetime import datetime
 from http import HTTPStatus as status
 from flask import request
 
 from settings import get_settings, save_settings, validate_settings
 from cameras import update_cameras
-from scan import Scan
-from scanner import build_scan
+from scan import Scan, ScanType
 from app import app
 
 
@@ -22,7 +20,7 @@ def get_scans():
             'scanId': scan.id,
             'scanType': scan.type.name,  # it's important to send .name, see Scan.find_by_id
             'createdAt': datetime.fromtimestamp(int(scan.timestamp)).strftime('%d %B %Y, %H:%M'),
-            'images': scan.urls
+            'images': scan.json_urls
         } for scan in Scan.all()
     ]
 
@@ -32,9 +30,11 @@ def get_scans():
 @app.route('/api/scans', methods=['POST'])
 def post_scans():
     try:
-        scan_type = request.args.get('type')
-        build_scan(scan_type)
-    except TypeError:
+        scan_type = ScanType[request.args.get('type')]
+        klass = scan_type.get_class()
+        scan = klass()
+        scan.build()
+    except KeyError:
         return {'message': 'Wrong `type` value'}, status.BAD_REQUEST
 
     return '', status.NO_CONTENT
