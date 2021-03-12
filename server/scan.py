@@ -8,9 +8,10 @@ from datetime import datetime
 from typing import Optional
 from flask import url_for as flask_url_for
 
-from cameras import CameraPosition, get_cameras
-from processing import capture_photos, read_images, persist_images, persist_image, undistort, project, compose
-from server.constants.paths import SCANS_DIR_PATH, SETTINGS_FILE_PATH
+from camera_position import CameraPosition
+from cameras import get_cameras
+from processing import capture_photos, read_images, persist_images, persist_image, undistort, draw_polygons, project, compose
+from paths import SCANS_DIR_PATH, SETTINGS_FILE_PATH
 
 
 DEFAULT_LOGGER = logging.getLogger(__name__)
@@ -130,12 +131,14 @@ class SnapshotScan(Scan):
             images['undistorted'] = undistort(images['original'], cameras)
             images['projected'] = project(images['undistorted'], cameras)
             images['result'] = compose(images['projected'])
+            images['undistorted'] = draw_polygons(images['undistorted'], cameras)
 
             persist_images(paths['undistorted'], images['undistorted'])
             persist_images(paths['projected'], images['projected'])
             persist_image(paths['result'], images['result'])
         except Exception:
             self.log(f'Exception occurred\n\n{traceback.print_exception(*sys.exc_info())}')
+            raise
         finally:
             self.cleanup_logger()
 
@@ -166,7 +169,8 @@ class CalibrationScan(Scan):
             images['undistorted'] = undistort(images['original'], cameras)
 
             persist_images(paths['undistorted'], images['undistorted'])
-        except Exception:
+        except Exception as error:
             self.log(f'Exception occurred\n\n{traceback.print_exception(*sys.exc_info())}')
+            raise
         finally:
             self.cleanup_logger()

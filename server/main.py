@@ -36,14 +36,16 @@ def post_scans():
         scan.build()
     except KeyError:
         return {'message': 'Wrong `type` value'}, status.BAD_REQUEST
+    except Exception as error:
+        return {'message': str(error)}, status.INTERNAL_SERVER_ERROR
 
-    return '', status.NO_CONTENT
+    return {'ok': True}, status.OK  # front-end checks for non-empty response
 
 
 @app.route('/api/scans', methods=['DELETE'])
 def delete_scans():
     Scan.delete_all()
-    return '', status.NO_CONTENT
+    return {'ok': True}, status.OK # front-end checks for non-empty response
 
 
 ############

@@ -1,29 +1,12 @@
 import {useCallback, useState} from "react";
-import {Tab, Tabs, ImagesGrid} from './shared';
+import {Tab, Tabs, ImagesGrid, ClickableImage} from './shared';
 
 
-const ResultImage = ({src, scanId}) => {
-    const doDownloadFile = useCallback(() => {
-        fetch(src)
-          .then(resp => resp.blob())
-          .then(blob => {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = `${scanId}.jpg`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-          })
-          .catch(error => {
-              console.error(error);
-              alert(error.message);
-          });
-    }, [src, scanId]);
-
+const ResultImage = (props) => {
     return (
-        <img className="img-responsive c-hand" src={src} alt={src} onClick={doDownloadFile}/>
+        <div className="container grid-xs">
+            <ClickableImage {...props}/>
+        </div>
     )
 }
 
@@ -31,6 +14,23 @@ const ResultImage = ({src, scanId}) => {
 const Snapshot = ({scan}) => {
     const [activeTab, setActiveTab] = useState('original');
     const selectTab = useCallback(ev => setActiveTab(ev.currentTarget.dataset.tabName), [setActiveTab]);
+
+    const images = {};
+    for (const name of ['original', 'undistorted', 'projected']) {
+        images[name] = {};
+        for (const position of ['LU', 'LL', 'RU', 'RL']) {
+            const src = scan.images[name][position];
+            images[name][position] = {src, alt: src};
+        }
+    }
+    images.result = {
+        src: scan.images.result,
+        alt: scan.images.result,
+        url: scan.images.result,
+        filename: `${scan.scanId}_result.jpg`
+    }
+
+    console.log(scan.images.result);
 
     return (
         <div>
@@ -41,10 +41,10 @@ const Snapshot = ({scan}) => {
                 <Tab onClick={selectTab} name="result" text="Result" isActive={activeTab === "result"}/>
             </Tabs>
 
-            {activeTab === "original" && <ImagesGrid images={scan.images.original}/>}
-            {activeTab === "undistorted" && <ImagesGrid images={scan.images.undistorted}/>}
-            {activeTab === "projected" && <ImagesGrid images={scan.images.projected}/>}
-            {activeTab === "result" && <ResultImage src={scan.images.result} scanId={scan.scanId}/>}
+            {activeTab === "original" && <ImagesGrid images={images.original}/>}
+            {activeTab === "undistorted" && <ImagesGrid images={images.undistorted}/>}
+            {activeTab === "projected" && <ImagesGrid images={images.projected}/>}
+            {activeTab === "result" && <ResultImage {...images.result}/>}
         </div>
     )
 }

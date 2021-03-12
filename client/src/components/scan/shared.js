@@ -1,4 +1,5 @@
 import cx from "classnames";
+import {useCallback} from "react";
 
 export const Tab = ({text, isActive, name, onClick}) => {
     const className = cx("tab-item text-tiny text-bold text-uppercase", {active: isActive});
@@ -17,11 +18,11 @@ export const Tabs = ({children}) => {
     )
 }
 
-const ClickableImage = ({filename, url, src, alt, ...props}) => {
+export const ClickableImage = ({filename, url, src, alt, ...props}) => {
     alt = alt || src;
     url = url || src;
 
-    if (!filename) {
+    if (!filename && src) {
         const pathItems = src.split('/');
         filename = pathItems[pathItems.length - 1];
     }
@@ -46,9 +47,9 @@ const ClickableImage = ({filename, url, src, alt, ...props}) => {
     }, [url, filename]);
 
     return (
-        <img className="img-responsive c-hand" src={src} alt={alt} onClick={doDownloadFile}/>
+        <img className="img-responsive clickable c-hand" src={src} alt={alt} onClick={doDownloadFile} {...props}/>
     )
-}
+};
 
 
 const Image = ({src, alt, ...props}) => {
@@ -64,14 +65,16 @@ export const ImagesGrid = ({images, isClickable}) => {
     const Component = isClickable ? ClickableImage : Image;
 
     const children = ['LU', 'RU', 'LL', 'RL'].map(key =>
-        <div className="column col-6">
+        <div key={key} className="column col-6">
             <Component {...images[key]}/>
         </div>
     )
 
     return (
-        <div className="columns">
-            {children}
+        <div className="container grid-xs">
+            <div className="columns">
+                {children}
+            </div>
         </div>
     )
 }

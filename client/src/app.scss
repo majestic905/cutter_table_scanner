@@ -27,6 +27,10 @@ main.container {
     padding-top: .4rem;
     padding-bottom: .4rem;
   }
+
+  img.clickable:hover {
+    box-shadow: 0 0 .1rem .1rem #5755d9;
+  }
 }
 
 
@@ -96,9 +100,6 @@ main.container {
     flex: 1;
     display: flex;
   }
-  //textarea {
-  //  height: 100%;
-  //}
 }
 
 

@@ -1,8 +1,13 @@
 import numpy as np
 import lensfunpy
 import cv2
-from cameras import Camera, CameraPosition
-from server.constants.custom_types import ImagesType, PathsType, CamerasType
+from typing import Dict
+from camera_position import CameraPosition
+from cameras import Camera
+
+ImagesType = Dict[CameraPosition, np.ndarray]
+CamerasType = Dict[CameraPosition, Camera]
+PathsType = Dict[CameraPosition, str]
 
 
 def _undistort_image(image: np.ndarray, camera: Camera):
@@ -15,11 +20,24 @@ def _undistort_image(image: np.ndarray, camera: Camera):
     return cv2.remap(image, undist_coords, None, cv2.INTER_LANCZOS4)
 
 
+def _draw_polygon(image: np.ndarray, camera: Camera):
+    points = camera.projection_points
+    points = np.array([points[key] for key in ['top_left', 'top_right', 'bottom_right', 'bottom_left']], dtype=np.int32)
+    points = points.reshape((-1, 1, 2))
+    return cv2.polylines(image, [points], True, (0,0,255), thickness=8)
+
+
 def _project_image(image: np.ndarray, camera: Camera):
     points = camera.projection_points
     width, height = camera.projection_image_size
 
-    src = np.array([points[key] for key in ['top_left', 'top_right', 'bottom_right', 'bottom_left']], dtype='float32')
+    keys = ['top_left', 'top_right', 'bottom_right', 'bottom_left']
+    for key in keys:
+        pt_x, pt_y = points[key]
+        if not 0 < pt_x < width or 0 < pt_y < height:
+            raise IndexError('One of projection_points falls outside of image')
+
+    src = np.array([points[key] for key in keys], dtype=np.float32)
     dst = np.array([[0, 0], [width - 1, 0], [width - 1, height - 1], [0, height - 1]], dtype="float32")
 
     M = cv2.getPerspectiveTransform(src, dst)
@@ -62,6 +80,11 @@ def capture_photos(paths: PathsType, cameras: CamerasType):
 def undistort(images: ImagesType, cameras: CamerasType):
     # scan.log('Building undistorted images...')
     return {position: _undistort_image(images[position], cameras[position]) for position in cameras}
+
+
+def draw_polygons(images, cameras):
+    # scan.log('Drawing polygons on undistorted images...')
+    return {position: _draw_polygon(images[position], cameras[position]) for position in cameras}
 
 
 def project(images: ImagesType, cameras: CamerasType):

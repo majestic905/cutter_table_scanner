@@ -44,7 +44,6 @@ const Scan = ({loadScans, selectedScan}) => {
 
             <hr/>
 
-            {!selectedScan && <p className="text-italic">Выберите скан из списка</p>}
             {selectedScan?.scanType === "SNAPSHOT" && <Snapshot scan={selectedScan}/>}
             {selectedScan?.scanType === "CALIBRATION" && <Calibration scan={selectedScan}/>}
             {isOpened && <SettingsModal closeModal={closeModal} />}
