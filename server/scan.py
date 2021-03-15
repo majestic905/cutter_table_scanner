@@ -131,6 +131,7 @@ class SnapshotScan(Scan):
             images['undistorted'] = undistort(images['original'], cameras)
             images['projected'] = project(images['undistorted'], cameras)
             images['result'] = compose(images['projected'])
+
             images['undistorted'] = draw_polygons(images['undistorted'], cameras)
 
             persist_images(paths['undistorted'], images['undistorted'])

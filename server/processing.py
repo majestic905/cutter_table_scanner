@@ -9,6 +9,8 @@ ImagesType = Dict[CameraPosition, np.ndarray]
 CamerasType = Dict[CameraPosition, Camera]
 PathsType = Dict[CameraPosition, str]
 
+_PROJECTION_POINTS_KEYS = ['top_left', 'top_right', 'bottom_right', 'bottom_left']
+
 
 def _undistort_image(image: np.ndarray, camera: Camera):
     height, width = image.shape[0], image.shape[1]
@@ -22,26 +24,26 @@ def _undistort_image(image: np.ndarray, camera: Camera):
 
 def _draw_polygon(image: np.ndarray, camera: Camera):
     points = camera.projection_points
-    points = np.array([points[key] for key in ['top_left', 'top_right', 'bottom_right', 'bottom_left']], dtype=np.int32)
+    points = np.array([points[key] for key in _PROJECTION_POINTS_KEYS], dtype=np.int32)
     points = points.reshape((-1, 1, 2))
     return cv2.polylines(image, [points], True, (0,0,255), thickness=8)
 
 
 def _project_image(image: np.ndarray, camera: Camera):
     points = camera.projection_points
-    width, height = camera.projection_image_size
+    dst_width, dst_height = camera.projection_image_size
+    img_height, img_width = image.shape[:2]
 
-    keys = ['top_left', 'top_right', 'bottom_right', 'bottom_left']
-    for key in keys:
-        pt_x, pt_y = points[key]
-        if not 0 < pt_x < width or 0 < pt_y < height:
+    for pt_x, pt_y in points.values():
+        print(pt_x, img_width, pt_y, img_height)
+        if not 0 <= pt_x < img_width or not 0 <= pt_y < img_height:
             raise IndexError('One of projection_points falls outside of image')
 
-    src = np.array([points[key] for key in keys], dtype=np.float32)
-    dst = np.array([[0, 0], [width - 1, 0], [width - 1, height - 1], [0, height - 1]], dtype="float32")
+    src_points = np.array([points[key] for key in _PROJECTION_POINTS_KEYS], dtype=np.float32)
+    dst_points = np.array([[0, 0], [dst_width - 1, 0], [dst_width - 1, dst_height - 1], [0, dst_height - 1]], dtype=np.float32)
 
-    M = cv2.getPerspectiveTransform(src, dst)
-    return cv2.warpPerspective(image, M, (width, height))
+    M = cv2.getPerspectiveTransform(src_points, dst_points)
+    return cv2.warpPerspective(image, M, (dst_width, dst_height))
 
 
 def compose(images: ImagesType):
