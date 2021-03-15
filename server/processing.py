@@ -92,3 +92,21 @@ def draw_polygons(images, cameras):
 def project(images: ImagesType, cameras: CamerasType):
     # scan.log('Building projected images...')
     return {position: _project_image(images[position], cameras[position]) for position in cameras}
+
+
+def _create_thumbnail(image: np.ndarray, width: int):
+    if image is None:
+        return None
+
+    if width is None:
+        raise ValueError('`width` is None')
+
+    (h, w) = image.shape[:2]
+    ratio = width / float(w)
+    height = int(h * ratio)
+
+    return cv2.resize(image, (width, height))
+
+
+def create_thumbnails(images: ImagesType, width: int):
+    return {position: _create_thumbnail(images[position], width) for position in images}

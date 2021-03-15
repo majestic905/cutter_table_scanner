@@ -10,7 +10,8 @@ from flask import url_for as flask_url_for
 
 from camera_position import CameraPosition
 from cameras import get_cameras
-from processing import capture_photos, read_images, persist_images, persist_image, undistort, draw_polygons, project, compose
+from processing import capture_photos, read_images, persist_images, persist_image, undistort, draw_polygons,\
+    project, compose, create_thumbnails
 from paths import SCANS_DIR_PATH, SETTINGS_FILE_PATH
 
 
@@ -112,11 +113,15 @@ class SnapshotScan(Scan):
         self.images = {'result': None}
         self.paths = {'result': self.path_for('result')}
         self.urls = {'result': self.url_for('result')}
+        self.thumb_paths = {'result': self.path_for('thumb_result')}
+        self.thumb_urls = {'result': self.url_for('thumb_result')}
 
         for name in ['original', 'undistorted', 'projected']:
             self.images[name] = dict.fromkeys(CameraPosition)
             self.paths[name] = {position: self.path_for(name, position) for position in CameraPosition}
             self.urls[name] = {position: self.url_for(name, position) for position in CameraPosition}
+            self.thumb_paths[name] = {position: self.path_for(f'thumb_{name}', position) for position in CameraPosition}
+            self.thumb_urls[name] = {position: self.url_for(f'thumb_{name}', position) for position in CameraPosition}
 
     def build(self):
         cameras = get_cameras()
