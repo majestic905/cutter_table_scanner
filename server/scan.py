@@ -12,6 +12,7 @@ from camera_position import CameraPosition
 from cameras import get_cameras
 from processing import capture_photos, read_images, persist_images, persist_image, undistort, draw_polygons,\
     project, compose, create_thumbnails, create_thumbnail
+from image import FullImage, Grid
 from paths import SCANS_DIR_PATH, SETTINGS_FILE_PATH
 
 
@@ -104,52 +105,47 @@ class SnapshotScan(Scan):
     def __init__(self, timestamp: Optional[str] = None, logger: logging.Logger = None, **kwargs):
         super().__init__(ScanType.SNAPSHOT, timestamp, logger, **kwargs)
 
-        self.images = {'result': None}
-        self.paths = {'result': self.path_for('result')}
-        self.urls = {'result': self.url_for('result')}
+        self.original = Grid('original')
+        self.undistorted = Grid('undistorted')
+        self.projected = Grid('projected')
+        self.result = FullImage('result')
 
-        self.thumbs = {'result': None}
-        self.thumb_paths = {'result': self.path_for('thumb_result')}
-        self.thumb_urls = {'result': self.url_for('thumb_result')}
+    def paths_for(self, grid: Grid):
+        return {
+            position: os.path.join(self.root_directory, grid.filenames[position])
+            for position in CameraPosition
+        }
 
-        for name in ['original', 'undistorted', 'projected']:
-            self.images[name] = dict.fromkeys(CameraPosition)
-            self.paths[name] = {position: self.path_for(name, position) for position in CameraPosition}
-            self.urls[name] = {position: self.url_for(name, position) for position in CameraPosition}
-
-            self.thumbs[name] = dict.fromkeys(CameraPosition)
-            self.thumb_paths[name] = {position: self.path_for(f'thumb_{name}', position) for position in CameraPosition}
-            self.thumb_urls[name] = {position: self.url_for(f'thumb_{name}', position) for position in CameraPosition}
+    def urls_for(self, grid: Grid):
+        return {
+            position: flask_url_for('static', filename=f'data/scans/{self.id}/{grid.filenames[position]}')
+            for position in CameraPosition
+        }
 
     def build(self):
         cameras = get_cameras()
 
         try:
             self.setup_logger()
-            paths, images = self.paths, self.images
-            thumb_paths, thumbs = self.thumb_paths, self.thumbs
 
-            capture_photos(paths['original'], cameras)
+            original_paths = self.paths_for(self.original)
+            undistorted_paths = self.paths_for(self.undistorted)
+            projected_paths = self.paths_for(self.projected)
+            result_path = os.path.join(self.root_directory, self.result.filename)
 
-            images['original'] = read_images(paths['original'])
-            undistorted = undistort(images['original'], cameras)
-            images['undistorted'] = draw_polygons(undistorted, cameras)
-            images['projected'] = project(undistorted, cameras)
-            images['result'] = compose(images['projected'])
+            capture_photos(original_paths, cameras)
+            self.original.read_from(original_paths)
+            self.original.persist_thumbnails_to(self.root_directory)
 
-            persist_images(paths['undistorted'], images['undistorted'])
-            persist_images(paths['projected'], images['projected'])
-            persist_image(paths['result'], images['result'])
+            undistorted_images = undistort(self.original.images, cameras)
+            self.undistorted.images = draw_polygons(undistorted_images, cameras)
+            self.undistorted.persist_to(self.root_directory)
 
-            thumbs['original'] = create_thumbnails(images['original'], 250)
-            thumbs['undistorted'] = create_thumbnails(images['undistorted'], 250)
-            thumbs['projected'] = create_thumbnails(images['projected'], 250)
-            thumbs['result'] = create_thumbnail(images['result'], 500)
+            self.projected.images = project(undistorted_images, cameras)
+            self.projected.persist_to(self.root_directory)
 
-            persist_images(thumb_paths['original'], thumbs['original'])
-            persist_images(thumb_paths['undistorted'], thumbs['undistorted'])
-            persist_images(thumb_paths['projected'], thumbs['projected'])
-            persist_image(thumb_paths['result'], thumbs['result'])
+            self.result.image = compose(self.projected.images)
+            self.result.persist_to(self.root_directory)
         except Exception:
             self.log(f'Exception occurred\n\n{traceback.print_exception(*sys.exc_info())}')
             raise
