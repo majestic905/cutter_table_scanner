@@ -19,18 +19,16 @@ const Snapshot = ({scan}) => {
     for (const name of ['original', 'undistorted', 'projected']) {
         images[name] = {};
         for (const position of ['LU', 'LL', 'RU', 'RL']) {
-            const src = scan.images[name][position];
+            const src = scan.images[name][position].thumb;
             images[name][position] = {src, alt: src};
         }
     }
     images.result = {
-        src: scan.images.result,
-        alt: scan.images.result,
-        url: scan.images.result,
+        src: scan.images.result.thumb,
+        alt: scan.images.result.thumb,
+        url: scan.images.result.full,
         filename: `${scan.scanId}_result.jpg`
     }
-
-    console.log(scan.images.result);
 
     return (
         <div>

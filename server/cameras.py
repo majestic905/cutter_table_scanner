@@ -29,8 +29,6 @@ class Camera:
 
 def _create_cameras():
     cameras_data = get_settings()['cameras']
-    print('in _create_cameras')
-    print(cameras_data)
     return {CameraPosition[key]: Camera(data) for key, data in cameras_data.items()}
 
 
@@ -39,13 +37,10 @@ _cameras = _create_cameras()
 
 def update_cameras():
     global _cameras
-    print('in update_cameras')
     _cameras = _create_cameras()
 
 
 def get_cameras():
-    print('in get_camerasss')
-    print(_cameras[CameraPosition.LL].projection_points)
     return _cameras
 
 

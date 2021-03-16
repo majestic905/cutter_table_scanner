@@ -15,8 +15,6 @@ def _read_settings():
 
 
 def get_settings():
-    print('in get_settings')
-    print(_settings)
     return _settings
 
 
@@ -24,7 +22,6 @@ def save_settings(new_settings: dict):
     global _settings
     _settings = new_settings
 
-    print('in save_settings')
     with open(SETTINGS_FILE_PATH, 'w') as file:
         json.dump(new_settings, file, indent=4)
 

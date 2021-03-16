@@ -11,7 +11,7 @@ from flask import url_for as flask_url_for
 from camera_position import CameraPosition
 from cameras import get_cameras
 from processing import capture_photos, read_images, persist_images, persist_image, undistort, draw_polygons,\
-    project, compose, create_thumbnails
+    project, compose, create_thumbnails, create_thumbnail
 from paths import SCANS_DIR_PATH, SETTINGS_FILE_PATH
 
 
@@ -50,7 +50,6 @@ class Scan:
     def all():
         for scan_id in os.listdir(SCANS_DIR_PATH):
             timestamp, scan_type = scan_id.split('_')
-            # print(scan_type, ScanType[scan_type], ScanType[scan_type].get_class())
             klass = ScanType[scan_type].get_class()
             yield klass(timestamp)
 
@@ -98,12 +97,7 @@ class Scan:
 
     @property
     def json_urls(self):
-        result = {}
-        for name, value in self.urls.items():
-            result[name] = value
-            if isinstance(value, dict):
-                result[name] = {position.name: url for position, url in value.items()}
-        return result
+        raise NotImplementedError
 
 
 class SnapshotScan(Scan):
@@ -113,6 +107,8 @@ class SnapshotScan(Scan):
         self.images = {'result': None}
         self.paths = {'result': self.path_for('result')}
         self.urls = {'result': self.url_for('result')}
+
+        self.thumbs = {'result': None}
         self.thumb_paths = {'result': self.path_for('thumb_result')}
         self.thumb_urls = {'result': self.url_for('thumb_result')}
 
@@ -120,6 +116,8 @@ class SnapshotScan(Scan):
             self.images[name] = dict.fromkeys(CameraPosition)
             self.paths[name] = {position: self.path_for(name, position) for position in CameraPosition}
             self.urls[name] = {position: self.url_for(name, position) for position in CameraPosition}
+
+            self.thumbs[name] = dict.fromkeys(CameraPosition)
             self.thumb_paths[name] = {position: self.path_for(f'thumb_{name}', position) for position in CameraPosition}
             self.thumb_urls[name] = {position: self.url_for(f'thumb_{name}', position) for position in CameraPosition}
 
@@ -129,24 +127,50 @@ class SnapshotScan(Scan):
         try:
             self.setup_logger()
             paths, images = self.paths, self.images
+            thumb_paths, thumbs = self.thumb_paths, self.thumbs
 
             capture_photos(paths['original'], cameras)
 
             images['original'] = read_images(paths['original'])
-            images['undistorted'] = undistort(images['original'], cameras)
-            images['projected'] = project(images['undistorted'], cameras)
+            undistorted = undistort(images['original'], cameras)
+            images['undistorted'] = draw_polygons(undistorted, cameras)
+            images['projected'] = project(undistorted, cameras)
             images['result'] = compose(images['projected'])
-
-            images['undistorted'] = draw_polygons(images['undistorted'], cameras)
 
             persist_images(paths['undistorted'], images['undistorted'])
             persist_images(paths['projected'], images['projected'])
             persist_image(paths['result'], images['result'])
+
+            thumbs['original'] = create_thumbnails(images['original'], 250)
+            thumbs['undistorted'] = create_thumbnails(images['undistorted'], 250)
+            thumbs['projected'] = create_thumbnails(images['projected'], 250)
+            thumbs['result'] = create_thumbnail(images['result'], 500)
+
+            persist_images(thumb_paths['original'], thumbs['original'])
+            persist_images(thumb_paths['undistorted'], thumbs['undistorted'])
+            persist_images(thumb_paths['projected'], thumbs['projected'])
+            persist_image(thumb_paths['result'], thumbs['result'])
         except Exception:
             self.log(f'Exception occurred\n\n{traceback.print_exception(*sys.exc_info())}')
             raise
         finally:
             self.cleanup_logger()
+
+    @property
+    def json_urls(self):
+        urls = {}
+        for name in ['original', 'undistorted', 'projected']:
+            urls[name] = {position.name: None for position in CameraPosition}
+            for position in CameraPosition:
+                urls[name][position.name] = {
+                    'full': self.urls[name][position],
+                    'thumb': self.thumb_urls[name][position]
+                }
+        urls['result'] = {
+            'full': self.urls['result'],
+            'thumb': self.thumb_urls['result']
+        }
+        return urls
 
 
 class CalibrationScan(Scan):
@@ -157,10 +181,18 @@ class CalibrationScan(Scan):
         self.paths = {}
         self.urls = {}
 
+        self.thumbs = {}
+        self.thumb_paths = {}
+        self.thumb_urls = {}
+
         for name in ['original', 'undistorted']:
             self.images[name] = dict.fromkeys(CameraPosition)
             self.paths[name] = {position: self.path_for(name, position) for position in CameraPosition}
             self.urls[name] = {position: self.url_for(name, position) for position in CameraPosition}
+
+            self.thumbs[name] = dict.fromkeys(CameraPosition)
+            self.thumb_paths[name] = {position: self.path_for(f'thumb_{name}', position) for position in CameraPosition}
+            self.thumb_urls[name] = {position: self.url_for(f'thumb_{name}', position) for position in CameraPosition}
 
     def build(self):
         cameras = get_cameras()
@@ -168,6 +200,7 @@ class CalibrationScan(Scan):
         try:
             self.setup_logger()
             paths, images = self.paths, self.images
+            thumb_paths, thumbs = self.thumb_paths, self.thumbs
 
             capture_photos(paths['original'], cameras)
 
@@ -175,8 +208,26 @@ class CalibrationScan(Scan):
             images['undistorted'] = undistort(images['original'], cameras)
 
             persist_images(paths['undistorted'], images['undistorted'])
+
+            thumbs['original'] = create_thumbnails(images['original'], 250)
+            thumbs['undistorted'] = create_thumbnails(images['undistorted'], 250)
+
+            persist_images(thumb_paths['original'], thumbs['original'])
+            persist_images(thumb_paths['undistorted'], thumbs['undistorted'])
         except Exception as error:
             self.log(f'Exception occurred\n\n{traceback.print_exception(*sys.exc_info())}')
             raise
         finally:
             self.cleanup_logger()
+
+    @property
+    def json_urls(self):
+        urls = {}
+        for name in ['original', 'undistorted']:
+            urls[name] = {position.name: None for position in CameraPosition}
+            for position in CameraPosition:
+                urls[name][position.name] = {
+                    'full': self.urls[name][position],
+                    'thumb': self.thumb_urls[name][position]
+                }
+        return urls

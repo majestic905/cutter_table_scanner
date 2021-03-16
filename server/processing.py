@@ -35,7 +35,6 @@ def _project_image(image: np.ndarray, camera: Camera):
     img_height, img_width = image.shape[:2]
 
     for pt_x, pt_y in points.values():
-        print(pt_x, img_width, pt_y, img_height)
         if not 0 <= pt_x < img_width or not 0 <= pt_y < img_height:
             raise IndexError('One of projection_points falls outside of image')
 
@@ -94,7 +93,7 @@ def project(images: ImagesType, cameras: CamerasType):
     return {position: _project_image(images[position], cameras[position]) for position in cameras}
 
 
-def _create_thumbnail(image: np.ndarray, width: int):
+def create_thumbnail(image: np.ndarray, width: int):
     if image is None:
         return None
 
@@ -109,4 +108,4 @@ def _create_thumbnail(image: np.ndarray, width: int):
 
 
 def create_thumbnails(images: ImagesType, width: int):
-    return {position: _create_thumbnail(images[position], width) for position in images}
+    return {position: create_thumbnail(images[position], width) for position in images}
