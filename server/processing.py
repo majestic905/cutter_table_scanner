@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 import lensfunpy
 import cv2
@@ -10,6 +11,8 @@ CamerasType = Dict[CameraPosition, Camera]
 PathsType = Dict[CameraPosition, str]
 
 _PROJECTION_POINTS_KEYS = ['top_left', 'top_right', 'bottom_right', 'bottom_left']
+
+LOGGER = logging.getLogger()
 
 
 def _undistort_image(image: np.ndarray, camera: Camera):
