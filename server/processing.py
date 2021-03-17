@@ -59,24 +59,12 @@ def compose(images: ImagesType):
     return np.concatenate((upper, lower), axis=0)
 
 
-def read_images(paths: PathsType):
-    return {position: cv2.imread(paths[position]) for position in paths}
-
-
-def persist_image(path, image):
-    cv2.imwrite(path, image)
-
-
-def persist_images(paths: PathsType, images: ImagesType):
-    for key in images:
-        persist_image(paths[key], images[key])
-
-
 def capture_photos(paths: PathsType, cameras: CamerasType):
     for position, camera in cameras.items():
         # scan.log(f'Capture START, {position.value}, {repr(camera)}')
         camera.capture_to_path(paths[position])
         # scan.log(f'Capture END, {position.value}, {repr(camera)}')
+
 
 def undistort(images: ImagesType, cameras: CamerasType):
     # scan.log('Building undistorted images...')
@@ -105,7 +93,3 @@ def create_thumbnail(image: np.ndarray, width: int):
     height = int(h * ratio)
 
     return cv2.resize(image, (width, height))
-
-
-def create_thumbnails(images: ImagesType, width: int):
-    return {position: create_thumbnail(images[position], width) for position in images}

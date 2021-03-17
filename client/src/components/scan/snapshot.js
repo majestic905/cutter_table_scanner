@@ -26,7 +26,7 @@ const Snapshot = ({scan}) => {
     images.result = {
         src: scan.images.result.thumb,
         alt: scan.images.result.thumb,
-        url: scan.images.result.full,
+        url: scan.images.result.image,
         filename: `${scan.scanId}_result.jpg`
     }
 

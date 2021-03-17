@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import cv2
+from flask import url_for as flask_url_for
 from processing import ImagesType, PathsType, create_thumbnail
 from camera_position import CameraPosition
 
@@ -33,17 +34,15 @@ class ThumbedImage:
     def read_from(self, path: str):
         self.image = cv2.imread(path)
 
-    def persist_to(self, dir_path: str):
-        self.persist_image_to(dir_path)
-        self.persist_thumbnail_to(dir_path)
+    def persist_to(self, path: dict):
+        self.persist_image_to(path['image'])
+        self.persist_thumbnail_to(path['thumb'])
 
-    def persist_image_to(self, dir_path: str):
-        file_path = os.path.join(dir_path, self.filename)
-        cv2.imwrite(file_path, self._image)
+    def persist_image_to(self, path: str):
+        cv2.imwrite(path, self._image)
 
-    def persist_thumbnail_to(self, dir_path: str):
-        file_path = os.path.join(dir_path, self.thumb_filename)
-        cv2.imwrite(file_path, self._thumb)
+    def persist_thumbnail_to(self, path: str):
+        cv2.imwrite(path, self._thumb)
 
 
 class FullImage(ThumbedImage):
@@ -79,7 +78,7 @@ class Grid:
     def __init__(self, name: str):
         self._items = {position: GridItem(name, position) for position in CameraPosition}
 
-        # filenames are not subject to change, images are, hence images comprehension sits inside method
+        # filenames are not subject to change, images are, hence images comprehension sits inside property method
         self._filenames = {position: self._items[position].filename for position in CameraPosition}
         self._thumb_filenames = {position: self._items[position].thumb_filename for position in CameraPosition}
 
@@ -90,6 +89,10 @@ class Grid:
     @property
     def thumb_filenames(self):
         return self._thumb_filenames
+
+    @property
+    def items(self):
+        return self._items
 
     @property
     def images(self):
@@ -104,10 +107,47 @@ class Grid:
         for position in CameraPosition:
             self._items[position].read_from(paths[position])
 
-    def persist_to(self, dir_path: str):
+    def persist_to(self, paths: dict):
         for position in CameraPosition:
-            self._items[position].persist_to(dir_path)
+            self._items[position].persist_to(paths[position])
 
-    def persist_thumbnails_to(self, dir_path: str):
+    def persist_thumbnails_to(self, paths: PathsType):
         for position in CameraPosition:
-            self._items[position].persist_thumbnail_to(dir_path)
+            self._items[position].persist_thumbnail_to(paths[position])
+
+
+class PathBuilder:
+    def __init__(self, scan_id: str, root_directory: str):
+        self._scan_id = scan_id
+        self._scan_dir_path = root_directory
+
+    def _uri_for(self, image: ThumbedImage, type: str, only: str = None):
+        if type == 'url':
+            image_uri = flask_url_for('get_scan_image', scan_id=self._scan_id, filename=image.filename)
+            thumb_uri = flask_url_for('get_scan_image', scan_id=self._scan_id, filename=image.thumb_filename)
+        elif type == 'path':
+            image_uri = os.path.join(self._scan_dir_path, image.filename)
+            thumb_uri = os.path.join(self._scan_dir_path, image.thumb_filename)
+        else:
+            raise ValueError('Possible values for `type` are "path" and "url"')
+
+        if only is None:
+            return {'image': image_uri, 'thumb': thumb_uri}
+        elif only == 'image':
+            return image_uri
+        elif only == 'thumb':
+            return thumb_uri
+        else:
+            raise ValueError('Possible values for `only` are "image", "thumb" or None')
+
+    def path_for(self, image: ThumbedImage, only: str = None):
+        return self._uri_for(image, 'path', only)
+
+    def url_for(self, image: ThumbedImage, only: str = None):
+        return self._uri_for(image, 'url', only)
+
+    def paths_for(self, grid: Grid, only: str = None):
+        return {position: self.path_for(grid.items[position], only) for position in CameraPosition}
+
+    def urls_for(self, grid: Grid, only: str = None):
+        return {position.name: self.url_for(grid.items[position], only) for position in CameraPosition}

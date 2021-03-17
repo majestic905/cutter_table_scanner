@@ -2,7 +2,7 @@ import os
 import shutil
 from server.app import app
 
-DATA_DIR_PATH = os.path.join(app.static_folder, 'data')
+DATA_DIR_PATH = os.path.join(app.root_path, 'data')
 SETTINGS_FILE_PATH = os.path.join(DATA_DIR_PATH, 'settings.json')
 SETTINGS_SCHEMA_PATH = os.path.join(app.root_path, 'files', 'settings.schema.json')
 SCANS_DIR_PATH = os.path.join(DATA_DIR_PATH, 'scans')

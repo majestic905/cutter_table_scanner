@@ -1,7 +1,9 @@
+import os
 from datetime import datetime
 from http import HTTPStatus as status
-from flask import request
+from flask import request, send_from_directory
 
+from paths import SCANS_DIR_PATH
 from settings import get_settings, save_settings, validate_settings
 from cameras import update_cameras
 from scan import Scan, ScanType
@@ -40,6 +42,12 @@ def post_scans():
         return {'message': str(error)}, status.INTERNAL_SERVER_ERROR
 
     return {'ok': True}, status.OK  # front-end checks for non-empty response
+
+
+@app.route('/api/scans/<scan_id>/images/<filename>', methods=['GET'])
+def get_scan_image(scan_id, filename):
+    directory = Scan.find(scan_id).root_directory
+    return send_from_directory(directory, filename=filename, as_attachment=True)
 
 
 @app.route('/api/scans', methods=['DELETE'])

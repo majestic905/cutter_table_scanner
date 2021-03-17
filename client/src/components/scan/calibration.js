@@ -15,7 +15,7 @@ const Calibration = ({scan}) => {
         }
     }
     for (const position of ['LU', 'LL', 'RU', 'RL'])
-        images['undistorted'][position].url = scan.images['undistorted'][position].full;
+        images['undistorted'][position].url = scan.images['undistorted'][position].image;
 
     return (
         <div>
