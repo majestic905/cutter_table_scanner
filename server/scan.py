@@ -1,15 +1,12 @@
-import logging
 import os.path
 import shutil
-import traceback
-import sys
 from enum import Enum
 from datetime import datetime
 from typing import Optional
 
 from app_logger import logger
-from cameras import get_cameras
-from processing import capture_photos, undistort, draw_polygons, project, compose
+from cameras import get_cameras, capture_photos
+from processing import undistort, draw_polygons, project, compose
 from image import FullImage, Grid, PathBuilder
 from paths import SCANS_DIR_PATH, SETTINGS_FILE_PATH
 
@@ -61,23 +58,6 @@ class Scan:
 
     #########
 
-    def log(self, *args, **kwargs):
-        self._logger.debug(*args, **kwargs)
-
-    def setup_logger(self):
-        self._logger = logger
-
-        log_file_path = os.path.join(self.root_directory, 'log.txt')
-        self._logger_handler = logging.FileHandler(log_file_path)
-        self._logger.addHandler(self._logger_handler)
-
-    def cleanup_logger(self):
-        self._logger.removeHandler(self._logger_handler)
-        self._logger_handler = None
-        self._logger = None
-
-    #########
-
     @property
     def id(self):
         return f'{self.timestamp}_{self.type.name}'
@@ -85,6 +65,10 @@ class Scan:
     @property
     def root_directory(self):
         return os.path.join(SCANS_DIR_PATH, self.id)
+
+    @property
+    def log_file_path(self):
+        return os.path.join(self.root_directory, 'log.txt')
 
 
 class SnapshotScan(Scan):
@@ -102,47 +86,43 @@ class SnapshotScan(Scan):
         cameras = get_cameras()
 
         try:
-            self.setup_logger()
-
             original_images_paths = self.path_builder.paths_for(self.original, only='image')
-            self.log('Capturing photos...')
-            capture_photos(original_images_paths, cameras)
+            logger.info('1. Capturing photos...')
+            capture_photos(original_images_paths)
 
-            self.log('Reading captured photos...')
+            logger.info('Reading captured photos...')
             self.original.read_from(original_images_paths)
 
             original_thumb_paths = self.path_builder.paths_for(self.original, only='thumb')
-            self.log('Writing original photos thumbnails...')
+            logger.info('Writing original photos thumbnails...')
             self.original.persist_thumbnails_to(original_thumb_paths)
 
-            self.log('Undistorting original images...')
+            logger.info('2. Undistorting original images...')
             undistorted_images = undistort(self.original.images, cameras)
 
-            self.log('Drawing polygons on undistorted images...')
+            logger.info('2.1. Drawing polygons on undistorted images...')
             self.undistorted.images = draw_polygons(undistorted_images, cameras)
 
             undistorted_paths = self.path_builder.paths_for(self.undistorted)
-            self.log('Writing undistorted images with thumbnails...')
+            logger.info('Writing undistorted images with thumbnails...')
             self.undistorted.persist_to(undistorted_paths)
 
-            self.log('Projecting undistorted images...')
+            logger.info('3. Projecting undistorted images...')
             self.projected.images = project(undistorted_images, cameras)
 
             projected_paths = self.path_builder.paths_for(self.projected)
-            self.log('Writing projected images with thumbnails...')
+            logger.info('Writing projected images with thumbnails...')
             self.projected.persist_to(projected_paths)
 
-            self.log('Composing result image...')
+            logger.info('4. Composing result image...')
             self.result.image = compose(self.projected.images)
 
             result_path = self.path_builder.path_for(self.result)
-            self.log('Writing result image with thumbnail...')
+            logger.info('Writing result image with thumbnail...')
             self.result.persist_to(result_path)
         except Exception:
-            self.log(f'Exception occurred\n\n{traceback.print_exception(*sys.exc_info())}')
+            logger.exception(f'Unexpected error occurred...')
             raise
-        finally:
-            self.cleanup_logger()
 
     @property
     def json_urls(self):
@@ -167,30 +147,26 @@ class CalibrationScan(Scan):
         cameras = get_cameras()
 
         try:
-            self.setup_logger()
-
             original_images_paths = self.path_builder.paths_for(self.original, only='image')
-            self.log('Capturing photos...')
+            logger.info('1. Capturing photos...')
             capture_photos(original_images_paths, cameras)
 
-            self.log('Reading captured photos...')
+            logger.info('Reading captured photos...')
             self.original.read_from(original_images_paths)
 
             original_thumb_paths = self.path_builder.paths_for(self.original, only='thumb')
-            self.log('Writing original photos thumbnails...')
+            logger.info('Writing original photos thumbnails...')
             self.original.persist_thumbnails_to(original_thumb_paths)
 
-            self.log('Undistorting original images...')
+            logger.info('2. Undistorting original images...')
             self.undistorted.images = undistort(self.original.images, cameras)
 
             undistorted_paths = self.path_builder.paths_for(self.undistorted)
-            self.log('Writing undistorted images with thumbnails...')
+            logger.info('Writing undistorted images with thumbnails...')
             self.undistorted.persist_to(undistorted_paths)
         except Exception as error:
-            self.log(f'Exception occurred\n\n{traceback.print_exception(*sys.exc_info())}')
+            logger.exception(f'Unexpected error occurred...')
             raise
-        finally:
-            self.cleanup_logger()
 
     @property
     def json_urls(self):

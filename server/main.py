@@ -1,9 +1,8 @@
-import os
 from datetime import datetime
 from http import HTTPStatus as status
 from flask import request, send_from_directory
 
-from paths import SCANS_DIR_PATH
+from app_logger import setup_logger, cleanup_logger
 from settings import get_settings, save_settings, validate_settings
 from cameras import update_cameras
 from scan import Scan, ScanType
@@ -33,19 +32,25 @@ def get_scans():
 def post_scans():
     try:
         scan_type = ScanType[request.args.get('type')]
-        klass = scan_type.get_class()
-        scan = klass()
-        scan.build()
     except KeyError:
         return {'message': 'Wrong `type` value'}, status.BAD_REQUEST
+
+    try:
+        klass = scan_type.get_class()
+        scan = klass()
+        setup_logger(scan.log_file_path)
+        scan.build()
     except Exception as error:
         return {'message': str(error)}, status.INTERNAL_SERVER_ERROR
+    finally:
+        cleanup_logger()
 
     return {'ok': True}, status.OK  # front-end checks for non-empty response
 
 
 @app.route('/api/scans/<scan_id>/images/<filename>', methods=['GET'])
 def get_scan_image(scan_id, filename):
+    # TODO: this is a problem place which doesn't allow to easily put all thumb images into /thumbs/ subfolder
     directory = Scan.find(scan_id).root_directory
     return send_from_directory(directory, filename=filename, as_attachment=True)
 

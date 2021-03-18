@@ -1,18 +1,15 @@
-import logging
 import numpy as np
 import lensfunpy
 import cv2
 from typing import Dict
-from camera_position import CameraPosition
-from cameras import Camera
+from camera import Camera, CameraPosition, CamerasType
 
-ImagesType = Dict[CameraPosition, np.ndarray]
-CamerasType = Dict[CameraPosition, Camera]
-PathsType = Dict[CameraPosition, str]
 
 _PROJECTION_POINTS_KEYS = ['top_left', 'top_right', 'bottom_right', 'bottom_left']
 
-LOGGER = logging.getLogger()
+
+ImagesType = Dict[CameraPosition, np.ndarray]
+PathsType = Dict[CameraPosition, str]
 
 
 def _undistort_image(image: np.ndarray, camera: Camera):
@@ -62,25 +59,15 @@ def compose(images: ImagesType):
     return np.concatenate((upper, lower), axis=0)
 
 
-def capture_photos(paths: PathsType, cameras: CamerasType):
-    for position, camera in cameras.items():
-        # scan.log(f'Capture START, {position.value}, {repr(camera)}')
-        camera.capture_to_path(paths[position])
-        # scan.log(f'Capture END, {position.value}, {repr(camera)}')
-
-
 def undistort(images: ImagesType, cameras: CamerasType):
-    # scan.log('Building undistorted images...')
     return {position: _undistort_image(images[position], cameras[position]) for position in cameras}
 
 
 def draw_polygons(images, cameras):
-    # scan.log('Drawing polygons on undistorted images...')
     return {position: _draw_polygon(images[position], cameras[position]) for position in cameras}
 
 
 def project(images: ImagesType, cameras: CamerasType):
-    # scan.log('Building projected images...')
     return {position: _project_image(images[position], cameras[position]) for position in cameras}
 
 

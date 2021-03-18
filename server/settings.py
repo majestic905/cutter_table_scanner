@@ -1,6 +1,6 @@
 import json
 from jsonschema import validate, ValidationError
-from camera_position import CameraPosition
+from camera import CameraPosition
 from paths import SETTINGS_FILE_PATH, SETTINGS_SCHEMA_PATH
 
 

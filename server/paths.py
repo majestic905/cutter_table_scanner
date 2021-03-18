@@ -6,6 +6,7 @@ DATA_DIR_PATH = os.path.join(app.root_path, 'data')
 SETTINGS_FILE_PATH = os.path.join(DATA_DIR_PATH, 'settings.json')
 SETTINGS_SCHEMA_PATH = os.path.join(app.root_path, 'files', 'settings.schema.json')
 SCANS_DIR_PATH = os.path.join(DATA_DIR_PATH, 'scans')
+LOCK_FILE_PATH = os.path.join(DATA_DIR_PATH, '.lock')
 
 _DEFAULT_SETTINGS_FILE_PATH = os.path.join(app.root_path, 'files', '_settings.json')
 _DEFAULT_CAMERAS_XML_PATH = os.path.join(app.root_path, 'files', '_cameras.xml')

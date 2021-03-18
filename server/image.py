@@ -3,7 +3,7 @@ import os
 import cv2
 from flask import url_for as flask_url_for
 from processing import ImagesType, PathsType, create_thumbnail
-from camera_position import CameraPosition
+from camera import CameraPosition
 
 
 class ThumbedImage:
