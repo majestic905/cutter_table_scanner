@@ -1,32 +1,10 @@
-#!/usr/bin/env python
-
-# python-gphoto2 - Python interface to libgphoto2
-# http://github.com/jim-easterbrook/python-gphoto2
-# Copyright (C) 2014-20  Jim Easterbrook  jim@jim-easterbrook.me.uk
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-# "object oriented" version of camera-summary.py
-
-from __future__ import print_function
-
 import logging
+import argparse
 import gphoto2 as gp
-from operator import itemgetter
+from timeit import default_timer as timer
 from threading import Thread
 
-logging.basicConfig(format='%(levelname)s: %(asctimeS)s: %(message)s', level=logging.WARNING)
+logging.basicConfig(format='%(levelname)s: %(asctime)s: %(message)s', level=logging.WARNING)
 callback_obj = gp.check_result(gp.use_python_logging())
 
 
@@ -38,18 +16,20 @@ def get_cameras():
         index = port_info_list.lookup_path(addr)
         return port_info_list[index]
 
-    def get_camera(addr):
+    def get_camera(args):
+        name, addr = args
+
         camera = gp.Camera()
         camera.set_port_info(get_port_info(addr))
         camera.init()
 
         serial_number = camera.get_single_config('serialnumber').get_value()
-        logging.warning(f'Port {addr} is taken by serial number {serial_number}')
+        logging.warning(f'Port {addr} is taken by camera with name `{name}` and serial number `{serial_number}`')
         return (serial_number, camera)
 
     return {
         serial_number: camera for serial_number, camera in
-        map(get_camera, map(itemgetter(1), gp.Camera.autodetect()))
+        map(get_camera, gp.Camera.autodetect())
     }
 
 
@@ -71,23 +51,44 @@ def capture(serial_number: str, camera: gp.Camera):
     logging.warning(f'{serial_number} delete end')
 
 
-def main():
+def capture_serial():
     cameras = get_cameras()
 
     for serial_number, camera in cameras.items():
         capture(serial_number, camera)
 
 
-    # threads = []
-    # for serial_number, camera in cameras.items():
-    #     thread = Thread(target=capture, args=(serial_number, camera))
-    #     threads.append(thread)
-    #
-    # for thread in threads:
-    #     thread.start()
-    #
-    # for thread in threads:
-    #     thread.join()
+def capture_parallel():
+    cameras = get_cameras()
+
+    threads = []
+    for serial_number, camera in cameras.items():
+        thread = Thread(target=capture, args=(serial_number, camera))
+        threads.append(thread)
+    
+    for thread in threads:
+        thread.start()
+    
+    for thread in threads:
+        thread.join()
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--parallel", action="store_true")
+    args = parser.parse_args()
+   
+    start = timer()
+
+    try:
+        if args.parallel:
+            logging.warning('Capturing in parallel mode')
+            capture_parallel()
+        else:
+            logging.warning('Capturing in serial mode')
+            capture_serial()
+    except Exception:
+        logging.warning('Some exception occurred', exc_info=True)
+    finally:
+        end = timer()
+        logging.warning(f'Elapsed time: {end - start}')
+
