@@ -1,6 +1,6 @@
 import numpy as np
-import os
 import cv2
+from pathlib import Path
 from flask import url_for as flask_url_for
 from processing import ImagesType, PathsType, create_thumbnail
 from camera import CameraPosition
@@ -117,7 +117,7 @@ class Grid:
 
 
 class PathBuilder:
-    def __init__(self, scan_id: str, root_directory: str):
+    def __init__(self, scan_id: str, root_directory: Path):
         self._scan_id = scan_id
         self._scan_dir_path = root_directory
 
@@ -126,8 +126,8 @@ class PathBuilder:
             image_uri = flask_url_for('get_scan_image', scan_id=self._scan_id, filename=image.filename)
             thumb_uri = flask_url_for('get_scan_image', scan_id=self._scan_id, filename=image.thumb_filename)
         elif type == 'path':
-            image_uri = os.path.join(self._scan_dir_path, image.filename)
-            thumb_uri = os.path.join(self._scan_dir_path, image.thumb_filename)
+            image_uri = self._scan_dir_path / image.filename
+            thumb_uri = self._scan_dir_path / image.thumb_filename
         else:
             raise ValueError('Possible values for `type` are "path" and "url"')
 

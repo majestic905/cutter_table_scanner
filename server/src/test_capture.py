@@ -72,6 +72,7 @@ def capture_parallel():
     for thread in threads:
         thread.join()
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--parallel", action="store_true")

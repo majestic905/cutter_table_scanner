@@ -1,4 +1,3 @@
-import os.path
 import shutil
 from enum import Enum
 from datetime import datetime
@@ -64,11 +63,11 @@ class Scan:
 
     @property
     def root_directory(self):
-        return os.path.join(SCANS_DIR_PATH, self.id)
+        return SCANS_DIR_PATH / self.id
 
     @property
     def log_file_path(self):
-        return os.path.join(self.root_directory, 'log.txt')
+        return self.root_directory / 'log.txt'
 
 
 class SnapshotScan(Scan):
