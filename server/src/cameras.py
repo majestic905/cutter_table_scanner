@@ -20,7 +20,7 @@ def _get_gp_cameras_by_serial():
 
         serial_number = camera.get_single_config('serialnumber').get_value()
         logger.debug(f'Port {addr} is taken by camera with name `{name}` and serial number `{serial_number}`')
-        return (serial_number, camera)
+        return serial_number, camera
 
     return dict([get_camera(name, addr) for name, addr in gp.Camera.autodetect()])
 
@@ -28,7 +28,7 @@ def _get_gp_cameras_by_serial():
 def _create_camera(camera_data: dict, mapping: dict, position: CameraPosition):
     if camera_data['type'] == 'real':
         serial_number = camera_data['serial_number']
-        if not serial_number in mapping:
+        if serial_number not in mapping:
             raise KeyError(f'Could not detect camera with serial number {serial_number} (for position {position})')
 
         gp_camera = mapping[serial_number]

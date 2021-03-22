@@ -6,7 +6,6 @@ import gphoto2 as gp
 from pathlib import Path
 from enum import Enum
 from timeit import default_timer as timer
-from typing import Dict
 from app_logger import logger
 from paths import DUMMY_CAPTURES_DIR_PATH
 
@@ -84,7 +83,6 @@ class RealCamera(Camera):
 
         end = timer()
         logger.debug(f'[capture_to_path] {serial_number} capture_to_path took {round(end - start, 2)} seconds')
-
 
     def __repr__(self):
         args = {'maker': self._maker, 'model': self._model, 'serial_number': self._serial_number}

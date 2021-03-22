@@ -8,25 +8,52 @@
       ]
     },
 
-    "camera": {
+    "projection_points": {
       "type": "object",
-      "required": ["maker", "model", "type", "projection_points", "projected_image_size", "real_size"],
+      "required": ["bottom_left", "bottom_right", "top_right", "top_left"],
       "properties": {
+        "bottom_left": { "$ref": "#/definitions/point" },
+        "bottom_right": { "$ref": "#/definitions/point" },
+        "top_right": { "$ref": "#/definitions/point" },
+        "top_left": { "$ref": "#/definitions/point" }
+      }
+    },
+
+    "blank_camera": {
+      "type": "object",
+      "required": ["type", "projection_points", "projected_image_size", "table_section_size"],
+      "properties": {
+        "type": { "type": "string" },
+        "projection_points": { "$ref": "#/definitions/projection_points" },
+        "projected_image_size": { "$ref": "#/definitions/point" },
+        "table_section_size": { "$ref": "#/definitions/point" }
+      }
+    },
+
+    "real_camera": {
+      "type": "object",
+      "required": ["type", "projection_points", "projected_image_size", "table_section_size", "maker", "model", "serial_number"],
+      "properties": {
+        "type": { "type": "string" },
+        "projection_points": { "$ref": "#/definitions/projection_points" },
+        "projected_image_size": { "$ref": "#/definitions/point" },
+        "table_section_size": { "$ref": "#/definitions/point" },
         "maker": { "type": "string" },
         "model": { "type": "string" },
-        "usb_port": { "type": "string" },
-        "projection_points": {
-          "type": "object",
-          "required": ["bottom_left", "bottom_right", "top_right", "top_left"],
-          "properties": {
-            "bottom_left": { "$ref": "#/definitions/point" },
-            "bottom_right": { "$ref": "#/definitions/point" },
-            "top_right": { "$ref": "#/definitions/point" },
-            "top_left": { "$ref": "#/definitions/point" }
-          }
-        },
+        "serial_number": { "type": "string" }
+      }
+    },
+
+    "dummy_camera": {
+      "type": "object",
+      "required": ["type", "projection_points", "projected_image_size", "table_section_size", "maker", "model"],
+      "properties": {
+        "type": { "type": "string" },
+        "projection_points": { "$ref": "#/definitions/projection_points" },
         "projected_image_size": { "$ref": "#/definitions/point" },
-        "real_size": { "$ref": "#/definitions/point" }
+        "table_section_size": { "$ref": "#/definitions/point" },
+        "maker": { "type": "string" },
+        "model": { "type": "string" },
       }
     }
   },
