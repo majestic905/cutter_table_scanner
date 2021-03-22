@@ -1,9 +1,14 @@
 import numpy as np
 import cv2
 from pathlib import Path
+from typing import Union, Dict
 from flask import url_for as flask_url_for
 from processing import ImagesType, PathsType, create_thumbnail
 from camera import CameraPosition
+
+
+PathOrPaths = Union[Path, Dict[str, Path]]
+StrOrStrs = Union[str, Dict[str, str]]
 
 
 class ThumbedImage:
@@ -140,14 +145,14 @@ class PathBuilder:
         else:
             raise ValueError('Possible values for `only` are "image", "thumb" or None')
 
-    def path_for(self, image: ThumbedImage, only: str = None):
+    def path_for(self, image: ThumbedImage, only: str = None) -> PathOrPaths:
         return self._uri_for(image, 'path', only)
 
-    def url_for(self, image: ThumbedImage, only: str = None):
+    def url_for(self, image: ThumbedImage, only: str = None) -> StrOrStrs:
         return self._uri_for(image, 'url', only)
 
-    def paths_for(self, grid: Grid, only: str = None):
+    def paths_for(self, grid: Grid, only: str = None) -> Dict[CameraPosition, PathOrPaths]:
         return {position: self.path_for(grid.items[position], only) for position in CameraPosition}
 
-    def urls_for(self, grid: Grid, only: str = None):
+    def urls_for(self, grid: Grid, only: str = None) -> Dict[CameraPosition, StrOrStrs]:
         return {position.name: self.url_for(grid.items[position], only) for position in CameraPosition}

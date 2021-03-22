@@ -2,10 +2,11 @@ import shutil
 from enum import Enum
 from datetime import datetime
 from typing import Optional
+from pathlib import Path
 
 from app_logger import logger
-from cameras import get_cameras, capture_photos
-from processing import undistort, draw_polygons, project, compose
+from cameras import get_cameras
+from processing import capture_photos, undistort, draw_polygons, project, compose
 from image import FullImage, Grid, PathBuilder
 from paths import SCANS_DIR_PATH, SETTINGS_FILE_PATH
 
@@ -27,7 +28,7 @@ class Scan:
         self.timestamp = timestamp or str(int(datetime.now().timestamp()))
 
         if timestamp is None:
-            os.mkdir(self.root_directory)
+            self.root_directory.mkdir()
             shutil.copy(SETTINGS_FILE_PATH, self.root_directory)
 
     def build(self):
@@ -41,7 +42,7 @@ class Scan:
 
     @staticmethod
     def all():
-        for scan_id in os.listdir(SCANS_DIR_PATH):
+        for scan_id in SCANS_DIR_PATH.iterdir():
             yield Scan.find(scan_id)
 
     @staticmethod
@@ -53,20 +54,20 @@ class Scan:
     @staticmethod
     def delete_all():
         shutil.rmtree(SCANS_DIR_PATH)
-        os.mkdir(SCANS_DIR_PATH)
+        SCANS_DIR_PATH.mkdir()
 
     #########
 
     @property
-    def id(self):
+    def id(self) -> str:
         return f'{self.timestamp}_{self.type.name}'
 
     @property
-    def root_directory(self):
+    def root_directory(self) -> Path:
         return SCANS_DIR_PATH / self.id
 
     @property
-    def log_file_path(self):
+    def log_file_path(self) -> Path:
         return self.root_directory / 'log.txt'
 
 
@@ -87,7 +88,7 @@ class SnapshotScan(Scan):
         try:
             original_images_paths = self.path_builder.paths_for(self.original, only='image')
             logger.info('1. Capturing photos...')
-            capture_photos(original_images_paths)
+            capture_photos(original_images_paths, cameras)
 
             logger.info('Reading captured photos...')
             self.original.read_from(original_images_paths)

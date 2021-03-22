@@ -3,7 +3,7 @@
         "LL": {
             "maker": "Nikon",
             "model": "Fake Camera",
-            "projection_image_size": [
+            "projectied_image_size": [
                 575,
                 805
             ],
@@ -29,12 +29,12 @@
                 1500,
                 1500
             ],
-            "usb_port": "/dev/usb3"
+            "type": "dummy"
         },
         "LU": {
             "maker": "Nikon",
             "model": "Fake Camera",
-            "projection_image_size": [
+            "projectied_image_size": [
                 575,
                 805
             ],
@@ -60,12 +60,12 @@
                 1500,
                 1500
             ],
-            "usb_port": "/dev/usb4"
+            "type":  "dummy"
         },
         "RL": {
             "maker": "Nikon",
             "model": "Fake Camera",
-            "projection_image_size": [
+            "projectied_image_size": [
                 575,
                 805
             ],
@@ -91,12 +91,12 @@
                 1500,
                 1500
             ],
-            "usb_port": "/dev/usb2"
+            "type":  "dummy"
         },
         "RU": {
             "maker": "Nikon",
             "model": "Fake Camera",
-            "projection_image_size": [
+            "projectied_image_size": [
                 575,
                 805
             ],
@@ -122,7 +122,7 @@
                 1500,
                 1500
             ],
-            "usb_port": "/dev/usb1"
+            "type":  "dummy"
         }
     }
 }

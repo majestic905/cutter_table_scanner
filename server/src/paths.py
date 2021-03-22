@@ -7,7 +7,7 @@ from app import app
 ROOT_PATH = Path(app.root_path)
 SCANS_DIR_PATH = Path(app.static_folder) / 'scans'
 
-FAKE_CAPTURES_DIR_PATH = ROOT_PATH / 'misc' / 'fake_captures'
+DUMMY_CAPTURES_DIR_PATH = ROOT_PATH / 'misc' / 'dummy_captures'
 
 SETTINGS_FILE_PATH = ROOT_PATH / 'settings.json'
 SETTINGS_SCHEMA_PATH = ROOT_PATH / 'settings.schema.json'

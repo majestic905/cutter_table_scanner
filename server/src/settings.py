@@ -39,17 +39,17 @@ def validate_settings(json: dict):
 
     sizes = {}
     for position in CameraPosition:
-        [width, height] = json['cameras'][position.name]['projection_image_size']
+        [width, height] = json['cameras'][position.name]['projectied_image_size']
         sizes[position.name] = {'width': width, 'height': height}
 
     if sizes['LU']['width'] != sizes['LL']['width']:
-        return f'ERROR — projection_image_size: LU width and LL width must be equal'
+        return f'ERROR — projectied_image_size: LU width and LL width must be equal'
     if sizes['LU']['height'] != sizes['RU']['height']:
-        return f'ERROR — projection_image_size: LU height and RU height must be equal'
+        return f'ERROR — projectied_image_size: LU height and RU height must be equal'
     if sizes['RL']['width'] != sizes['RU']['width']:
-        return f'ERROR — projection_image_size: RL width and RU width must be equal'
+        return f'ERROR — projectied_image_size: RL width and RU width must be equal'
     if sizes['RL']['height'] != sizes['LL']['height']:
-        return f'ERROR — projection_image_size: RL height and LL height must be equal'
+        return f'ERROR — projectied_image_size: RL height and LL height must be equal'
 
 
 _settings = _read_settings()

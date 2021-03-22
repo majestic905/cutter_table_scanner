@@ -1,18 +1,27 @@
 import numpy as np
 import lensfunpy
 import cv2
+from app_logger import logger
+from pathlib import Path
+from threading import Thread
 from typing import Dict
-from camera import Camera, CameraPosition, CamerasType
-
-
-_PROJECTION_POINTS_KEYS = ['top_left', 'top_right', 'bottom_right', 'bottom_left']
+from timeit import default_timer as timer
+from camera import Camera, CameraPosition
 
 
 ImagesType = Dict[CameraPosition, np.ndarray]
-PathsType = Dict[CameraPosition, str]
+PathsType = Dict[CameraPosition, Path]
+CamerasType = Dict[CameraPosition, Camera]
+
+
+def _capture_photo(path: Path, camera: Camera):
+    camera.capture_to_path(path)
 
 
 def _undistort_image(image: np.ndarray, camera: Camera):
+    if not camera.lf_cam or not camera.lf_lens:
+        return image
+
     height, width = image.shape[0], image.shape[1]
 
     mod = lensfunpy.Modifier(camera.lf_lens, camera.lf_cam.crop_factor, width, height)
@@ -24,21 +33,22 @@ def _undistort_image(image: np.ndarray, camera: Camera):
 
 def _draw_polygon(image: np.ndarray, camera: Camera):
     points = camera.projection_points
-    points = np.array([points[key] for key in _PROJECTION_POINTS_KEYS], dtype=np.int32)
-    points = points.reshape((-1, 1, 2))
+    points = [points['top_left'], points['top_right'], points['bottom_right'], points['bottom_left']]
+    points = np.array(points, dtype=np.int32).reshape((-1, 1, 2))
     return cv2.polylines(image, [points], True, (0,0,255), thickness=8)
 
 
 def _project_image(image: np.ndarray, camera: Camera):
     points = camera.projection_points
-    dst_width, dst_height = camera.projection_image_size
+    dst_width, dst_height = camera.projectied_image_size
     img_height, img_width = image.shape[:2]
 
     for pt_x, pt_y in points.values():
         if not 0 <= pt_x < img_width or not 0 <= pt_y < img_height:
             raise IndexError('One of projection_points falls outside of image')
 
-    src_points = np.array([points[key] for key in _PROJECTION_POINTS_KEYS], dtype=np.float32)
+    src_points = [points['top_left'], points['top_right'], points['bottom_right'], points['bottom_left']]
+    src_points = np.array(src_points, dtype=np.float32)
     dst_points = np.array([[0, 0], [dst_width - 1, 0], [dst_width - 1, dst_height - 1], [0, dst_height - 1]], dtype=np.float32)
 
     M = cv2.getPerspectiveTransform(src_points, dst_points)
@@ -57,6 +67,25 @@ def compose(images: ImagesType):
 
     # vertically
     return np.concatenate((upper, lower), axis=0)
+
+
+def capture_photos(paths: PathsType, cameras: CamerasType):
+    threads = {
+        position: Thread(target=_capture_photo, args=(paths[position], cameras[position], position.value))
+        for position in CameraPosition
+    }
+
+    start = timer()
+    logger.debug('[capture_photos] start')
+
+    for position in CameraPosition:
+        threads[position].start()
+
+    for position in CameraPosition:
+        threads[position].join()
+
+    end = timer()
+    logger.debug(f'[capture_photos] end, took {round(end - start, 2)} seconds')
 
 
 def undistort(images: ImagesType, cameras: CamerasType):
