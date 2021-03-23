@@ -42,8 +42,8 @@ class Scan:
 
     @staticmethod
     def all():
-        for scan_id in SCANS_DIR_PATH.iterdir():
-            yield Scan.find(scan_id)
+        for scan_dir_path in SCANS_DIR_PATH.iterdir():
+            yield Scan.find(scan_dir_path.name)
 
     @staticmethod
     def find(scan_id):

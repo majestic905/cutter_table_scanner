@@ -3,7 +3,7 @@
         "LL": {
             "maker": "Nikon",
             "model": "Fake Camera",
-            "projectied_image_size": [
+            "projected_image_size": [
                 575,
                 805
             ],
@@ -29,12 +29,12 @@
                 1500,
                 1500
             ],
-            "type": "dummy"
+            "type": "real"
         },
         "LU": {
             "maker": "Nikon",
             "model": "Fake Camera",
-            "projectied_image_size": [
+            "projected_image_size": [
                 575,
                 805
             ],
@@ -60,12 +60,12 @@
                 1500,
                 1500
             ],
-            "type":  "dummy"
+            "type":  "real"
         },
         "RL": {
             "maker": "Nikon",
             "model": "Fake Camera",
-            "projectied_image_size": [
+            "projected_image_size": [
                 575,
                 805
             ],
@@ -91,12 +91,12 @@
                 1500,
                 1500
             ],
-            "type":  "dummy"
+            "type":  "real"
         },
         "RU": {
             "maker": "Nikon",
             "model": "Fake Camera",
-            "projectied_image_size": [
+            "projected_image_size": [
                 575,
                 805
             ],
@@ -122,7 +122,7 @@
                 1500,
                 1500
             ],
-            "type":  "dummy"
+            "type":  "real"
         }
     }
 }

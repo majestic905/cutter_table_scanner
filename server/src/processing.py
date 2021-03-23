@@ -40,7 +40,7 @@ def _draw_polygon(image: np.ndarray, camera: Camera):
 
 def _project_image(image: np.ndarray, camera: Camera):
     points = camera.projection_points
-    dst_width, dst_height = camera.projectied_image_size
+    dst_width, dst_height = camera.projected_image_size
     img_height, img_width = image.shape[:2]
 
     for pt_x, pt_y in points.values():
@@ -71,7 +71,7 @@ def compose(images: ImagesType):
 
 def capture_photos(paths: PathsType, cameras: CamerasType):
     threads = {
-        position: Thread(target=_capture_photo, args=(paths[position], cameras[position], position.value))
+        position: Thread(target=_capture_photo, args=(paths[position], cameras[position]))
         for position in CameraPosition
     }
 

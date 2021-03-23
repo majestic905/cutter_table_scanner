@@ -54,10 +54,10 @@ const SettingsModal = ({closeModal}) => {
                 </div>
                 <ul className="mt-0">
                    <li className="mt-0">
-                       Значения real_size (миллиметры) напрямую в программе не используются, они здесь для того чтобы были.
+                       Значения table_section_size (миллиметры) напрямую в программе не используются, они здесь для того чтобы были.
                    </li>
                    <li className="mt-0">
-                       Значения projection_image_size (пиксели) используются; задаются вручную; должны быть строго пропорциональны значениям real_size!
+                       Значения projected_image_size (пиксели) используются; задаются вручную; должны быть строго пропорциональны значениям table_section_size!
                    </li>
                </ul>
                 {error && <div className="modal-header pt-0">

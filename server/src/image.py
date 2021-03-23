@@ -18,7 +18,7 @@ class ThumbedImage:
         self._thumb = None
 
     @property
-    def image(self):
+    def image(self) -> np.ndarray:
         return self._image
 
     @image.setter
@@ -36,18 +36,18 @@ class ThumbedImage:
     def thumb_filename(self):
         raise NotImplementedError
 
-    def read_from(self, path: str):
-        self.image = cv2.imread(path)
+    def read_from(self, path: Path):
+        self.image = cv2.imread(str(path))
 
-    def persist_to(self, path: dict):
+    def persist_to(self, path: Dict[str, Path]):
         self.persist_image_to(path['image'])
         self.persist_thumbnail_to(path['thumb'])
 
-    def persist_image_to(self, path: str):
-        cv2.imwrite(path, self._image)
+    def persist_image_to(self, path: Path):
+        cv2.imwrite(str(path), self._image)
 
-    def persist_thumbnail_to(self, path: str):
-        cv2.imwrite(path, self._thumb)
+    def persist_thumbnail_to(self, path: Path):
+        cv2.imwrite(str(path), self._thumb)
 
 
 class FullImage(ThumbedImage):
@@ -56,11 +56,11 @@ class FullImage(ThumbedImage):
         self._name = name
 
     @property
-    def filename(self):
+    def filename(self) -> str:
         return f'{self._name}.jpg'
 
     @property
-    def thumb_filename(self):
+    def thumb_filename(self) -> str:
         return f'thumb_{self._name}.jpg'
 
 
@@ -71,11 +71,11 @@ class GridItem(ThumbedImage):
         self._position = position
 
     @property
-    def filename(self):
+    def filename(self) -> str:
         return f'{self._position.value}_{self._name}.jpg'
 
     @property
-    def thumb_filename(self):
+    def thumb_filename(self) -> str:
         return f'thumb_{self._position.value}_{self._name}.jpg'
 
 
@@ -88,19 +88,19 @@ class Grid:
         self._thumb_filenames = {position: self._items[position].thumb_filename for position in CameraPosition}
 
     @property
-    def filenames(self):
+    def filenames(self) -> Dict[CameraPosition, str]:
         return self._filenames
 
     @property
-    def thumb_filenames(self):
+    def thumb_filenames(self) -> Dict[CameraPosition, str]:
         return self._thumb_filenames
 
     @property
-    def items(self):
+    def items(self) -> Dict[CameraPosition, GridItem]:
         return self._items
 
     @property
-    def images(self):
+    def images(self) -> Dict[CameraPosition, np.ndarray]:
         return {position: self._items[position].image for position in CameraPosition}
 
     @images.setter
