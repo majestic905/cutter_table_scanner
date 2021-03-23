@@ -29,7 +29,7 @@
                 1500,
                 1500
             ],
-            "serial_number": "000043107073",
+            "serial_number": "000041116619",
             "type": "real"
         },
         "LU": {
@@ -61,7 +61,7 @@
                 1500,
                 1500
             ],
-            "serial_number": "000041116619",
+            "serial_number": "000043107073",
             "type":  "real"
         },
         "RL": {
@@ -125,7 +125,7 @@
                 1500,
                 1500
             ],
-            "serial_number": "not_available_yet",
+            "serial_number": "000041110299",
             "type":  "real"
         }
     }

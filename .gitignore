@@ -1,6 +1,7 @@
 /.idea
 .eslintcache
-server/static
+server/static/*
+!server/static/build/
 server/data
 
 # Byte-compiled / optimized / DLL files
@@ -13,7 +14,6 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
 develop-eggs/
 dist/
 downloads/
