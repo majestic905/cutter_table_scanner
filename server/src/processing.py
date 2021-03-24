@@ -57,7 +57,7 @@ def _flip_image(image: np.ndarray):  # flipCode: 0 - horizontally, 1 - verticall
 
 
 def flip_images(images: ImagesType):
-    return {_flip_image(images[position]) for position in CameraPosition}
+    return {position: _flip_image(images[position]) for position in CameraPosition}
 
 
 def _undistort_image(image: np.ndarray, camera: Camera):
