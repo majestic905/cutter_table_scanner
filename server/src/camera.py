@@ -55,7 +55,7 @@ class RealCamera(Camera):
         self._maker = camera_data['maker']
         self._model = camera_data['model']
 
-        # self._gp_camera = gp_camera
+        self._gp_camera = gp_camera
 
         db = lensfunpy.Database()
         self.lf_cam = db.find_cameras(self._maker, self._model)[0]

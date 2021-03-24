@@ -3,7 +3,7 @@ import {Tab, Tabs, ImagesGrid} from './shared';
 
 
 const Calibration = ({scan}) => {
-    const [activeTab, setActiveTab] = useState('original');
+    const [activeTab, setActiveTab] = useState('undistorted');
     const selectTab = useCallback(ev => setActiveTab(ev.currentTarget.dataset.tabName), [setActiveTab]);
 
     const images = {};

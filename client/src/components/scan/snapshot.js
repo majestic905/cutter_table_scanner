@@ -12,7 +12,7 @@ const ResultImage = (props) => {
 
 
 const Snapshot = ({scan}) => {
-    const [activeTab, setActiveTab] = useState('original');
+    const [activeTab, setActiveTab] = useState('result');
     const selectTab = useCallback(ev => setActiveTab(ev.currentTarget.dataset.tabName), [setActiveTab]);
 
     const images = {};
