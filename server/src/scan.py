@@ -97,7 +97,7 @@ class SnapshotScan(Scan):
             self.original.read_from(original_images_paths)
 
             logger.info('Flipping images vertically...')
-            self.original = flip_images(self.original)
+            self.original = flip_images(self.original.images)
 
             original_thumb_paths = self.path_builder.paths_for(self.original, only='thumb')
             logger.info('Writing original photos thumbnails...')
@@ -164,7 +164,7 @@ class CalibrationScan(Scan):
             self.original.read_from(original_images_paths)
 
             logger.info('Flipping images vertically...')
-            self.original = flip_images(self.original)
+            self.original = flip_images(self.original.images)
 
             original_thumb_paths = self.path_builder.paths_for(self.original, only='thumb')
             logger.info('Writing original photos thumbnails...')
