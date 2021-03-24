@@ -93,15 +93,15 @@ class SnapshotScan(Scan):
             logger.info('Setting Exif.Image.Orientation=1 to disable undesired auto-rotation...')
             disorient_images(original_images_paths)
 
-            original_thumb_paths = self.path_builder.paths_for(self.original, only='thumb')
-            logger.info('Writing original photos thumbnails...')
-            self.original.persist_thumbnails_to(original_thumb_paths)
-
             logger.info('Reading captured photos...')
             self.original.read_from(original_images_paths)
 
             logger.info('Flipping images vertically...')
             self.original = flip_images(self.original)
+
+            original_thumb_paths = self.path_builder.paths_for(self.original, only='thumb')
+            logger.info('Writing original photos thumbnails...')
+            self.original.persist_thumbnails_to(original_thumb_paths)
 
             logger.info('Undistorting original images...')
             undistorted_images = undistort(self.original.images, cameras)
@@ -160,15 +160,15 @@ class CalibrationScan(Scan):
             logger.info('Setting Exif.Image.Orientation=1 to disable undesired auto-rotation...')
             disorient_images(original_images_paths)
 
-            original_thumb_paths = self.path_builder.paths_for(self.original, only='thumb')
-            logger.info('Writing original photos thumbnails...')
-            self.original.persist_thumbnails_to(original_thumb_paths)
-
             logger.info('Reading photos...')
             self.original.read_from(original_images_paths)
 
             logger.info('Flipping images vertically...')
             self.original = flip_images(self.original)
+
+            original_thumb_paths = self.path_builder.paths_for(self.original, only='thumb')
+            logger.info('Writing original photos thumbnails...')
+            self.original.persist_thumbnails_to(original_thumb_paths)
 
             logger.info('Undistorting original images...')
             self.undistorted.images = undistort(self.original.images, cameras)
