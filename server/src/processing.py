@@ -53,7 +53,7 @@ def disorient_images(paths: PathsType):
 
 
 def _flip_image(image: np.ndarray):  # flipCode: 0 - vertically, 1 - horizontally, -1 - both
-    return cv2.flip(image, 0)
+    return cv2.flip(image, -1)
 
 
 def flip_images(images: ImagesType):
