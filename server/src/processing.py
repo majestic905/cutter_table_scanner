@@ -1,7 +1,7 @@
 import numpy as np
 import lensfunpy
 import cv2
-import pyexiv2
+import exif
 from app_logger import logger
 from pathlib import Path
 from threading import Thread
@@ -38,9 +38,13 @@ def capture_photos(paths: PathsType, cameras: CamerasType):
     logger.debug(f'[capture_photos] end, took {round(end - start, 2)} seconds')
 
 
-def _disorient_image(path: Path):  # not thread safe (as pyexiv2 documentation says)
-    with pyexiv2.Image(str(path)) as img:
-        img.modify_exif({'Exif.Image.Orientation': '1'})
+def _disorient_image(path: Path):
+    with open(path, 'rb') as file:
+        image = exif.Image(file)
+        image.orientation = '1'
+
+    with open(path, 'wb') as file:
+        file.write(image.get_file())
 
 
 def disorient_images(paths: PathsType):
