@@ -66,7 +66,7 @@ class FullImage(ThumbedImage):
 
 class GridItem(ThumbedImage):
     def __init__(self, name: str, position: CameraPosition):
-        super().__init__(250)
+        super().__init__(450)
         self._name = name
         self._position = position
 
