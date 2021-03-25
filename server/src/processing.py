@@ -52,14 +52,6 @@ def disorient_images(paths: PathsType):
         _disorient_image(paths[position])
 
 
-def _flip_image(image: np.ndarray):  # flipCode: 0 - vertically, 1 - horizontally, -1 - both
-    return cv2.flip(image, -1)
-
-
-def flip_images(images: ImagesType):
-    return {position: _flip_image(images[position]) for position in CameraPosition}
-
-
 def _undistort_image(image: np.ndarray, camera: Camera):
     if not camera.lf_cam or not camera.lf_lens:
         return image

@@ -1,12 +1,13 @@
 import shutil
 from enum import Enum
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 from pathlib import Path
 
 from app_logger import logger
 from cameras import get_cameras
-from processing import capture_photos, disorient_images, flip_images, undistort, draw_polygons, project, compose
+from camera import CameraPosition
+from processing import capture_photos, disorient_images, undistort, draw_polygons, project, compose
 from image import FullImage, Grid, PathBuilder
 from paths import SCANS_DIR_PATH, SETTINGS_FILE_PATH
 
@@ -96,9 +97,6 @@ class SnapshotScan(Scan):
             logger.info('Reading captured photos...')
             self.original.read_from(original_images_paths)
 
-            logger.info('Flipping images vertically...')
-            self.original.images = flip_images(self.original.images)
-
             original_thumb_paths = self.path_builder.paths_for(self.original, only='thumb')
             logger.info('Writing original photos thumbnails...')
             self.original.persist_thumbnails_to(original_thumb_paths)
@@ -162,9 +160,6 @@ class CalibrationScan(Scan):
 
             logger.info('Reading photos...')
             self.original.read_from(original_images_paths)
-
-            logger.info('Flipping images vertically...')
-            self.original.images = flip_images(self.original.images)
 
             original_thumb_paths = self.path_builder.paths_for(self.original, only='thumb')
             logger.info('Writing original photos thumbnails...')
