@@ -22,8 +22,8 @@ export const ClickableImage = ({filename, url, src, alt, ...props}) => {
     alt = alt || src;
     url = url || src;
 
-    if (!filename && src) {
-        const pathItems = src.split('/');
+    if (!filename && url) {
+        const pathItems = url.split('/');
         filename = pathItems[pathItems.length - 1];
     }
 

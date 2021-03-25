@@ -12,7 +12,7 @@ const Scan = ({loadScans, selectedScan}) => {
     const [{isLoading, response, error}, doFetch] = useFetch('/api/scans');
 
     const requestScan = useCallback(type => {
-        doFetch({method: 'POST', searchParams: {type}, timeout: 30000});
+        doFetch({method: 'POST', searchParams: {type}, timeout: 50000});
     }, [doFetch]);
 
     useEffect(() => {
