@@ -104,13 +104,6 @@ class SnapshotScan(Scan):
             logger.info('Undistorting original images...')
             undistorted_images = undistort(self.original.images, cameras)
 
-            logger.info('Drawing polygons on undistorted images...')
-            self.undistorted.images = draw_polygons(undistorted_images, cameras)
-
-            undistorted_paths = self.path_builder.paths_for(self.undistorted)
-            logger.info('Writing undistorted images with thumbnails...')
-            self.undistorted.persist_to(undistorted_paths)
-
             logger.info('Projecting undistorted images...')
             self.projected.images = project(undistorted_images, cameras)
 
@@ -124,6 +117,13 @@ class SnapshotScan(Scan):
             result_path = self.path_builder.path_for(self.result)
             logger.info('Writing result image with thumbnail...')
             self.result.persist_to(result_path)
+
+            logger.info('Drawing polygons on undistorted images...')
+            self.undistorted.images = draw_polygons(undistorted_images, cameras)
+
+            undistorted_paths = self.path_builder.paths_for(self.undistorted)
+            logger.info('Writing undistorted images with thumbnails...')
+            self.undistorted.persist_to(undistorted_paths)
         except Exception:
             logger.exception(f'Unexpected error occurred...')
             raise
