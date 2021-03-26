@@ -1,23 +1,21 @@
 import {useState, useEffect} from "react";
 import useFetch from "./hooks/useFetch";
-
-import ScansList from "./components/scans_list";
-import Scan from "./components/scan";
-
+import Header from "./components/header";
+import Snapshot from "./components/snapshot";
+import Calibration from "./components/calibration";
 import './app.scss';
 
 
-
 function App() {
-    const [selectedScan, setSelectedScan] = useState(null);
+    const [scan, setScan] = useState(null);
 
-    const [{isLoading, response, error}, loadScans] = useFetch("/api/scans");
+    const [{isLoading, response, error}, getScan] = useFetch("/api/scan");
 
-    useEffect(loadScans, [loadScans]);
+    useEffect(getScan, [getScan]);
 
     useEffect(() => {
-        if (response && response.scans.length > 0)
-            setSelectedScan(response.scans[0]);
+        if (response)
+            setScan(response);
         else if (error)
             alert(`Ошибка при загрузке списка: ${error}`);
     }, [response, error]);
@@ -25,23 +23,12 @@ function App() {
     if (isLoading && !response)
         return <div className="loading mt-2"/>;
 
-    // ------------
-
     return (
-        <main className="container">
-            <div className="columns">
-                <div className="column col-3" id="column-left">
-                    <ScansList scans={response?.scans} loadScans={loadScans}
-                           selectedScan={selectedScan} selectScan={setSelectedScan}
-                    />
-                </div>
+        <main>
+            <Header getScan={getScan} />
 
-                <div className="divider-vert"/>
-
-                <div className="column" id="column-right">
-                    <Scan loadScans={loadScans} selectedScan={selectedScan} />
-                </div>
-            </div>
+            {scan?.scanType === "snapshot" && <Snapshot scan={scan}/>}
+            {scan?.scanType === "calibration" && <Calibration scan={scan}/>}
         </main>
     );
 }

@@ -2,7 +2,7 @@ import cx from "classnames";
 import {useCallback} from "react";
 
 export const Tab = ({text, isActive, name, onClick}) => {
-    const className = cx("tab-item text-tiny text-bold text-uppercase", {active: isActive});
+    const className = cx("tab-item text-bold text-uppercase", {active: isActive});
     return (
         <li className={className} data-tab-name={name} onClick={onClick}>
             <a href="#">{text}</a>
@@ -12,7 +12,7 @@ export const Tab = ({text, isActive, name, onClick}) => {
 
 export const Tabs = ({children}) => {
     return (
-        <ul className="tab tab-block">
+        <ul className="tab">
             {children}
         </ul>
     )
@@ -71,7 +71,7 @@ export const ImagesGrid = ({images, isClickable}) => {
     )
 
     return (
-        <div className="container grid-md">
+        <div className="container grid-lg">
             <div className="columns">
                 {children}
             </div>

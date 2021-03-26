@@ -4,7 +4,7 @@ import {Tab, Tabs, ImagesGrid, ClickableImage} from './shared';
 
 const ResultImage = (props) => {
     return (
-        <div className="container grid-xs">
+        <div className="container grid-lg">
             <ClickableImage {...props}/>
         </div>
     )
@@ -32,7 +32,7 @@ const Snapshot = ({scan}) => {
 
     return (
         <div>
-            <Tabs activeTab={activeTab} selectTab={selectTab}>
+            <Tabs>
                 <Tab onClick={selectTab} name="original" text="Original" isActive={activeTab === "original"}/>
                 <Tab onClick={selectTab} name="undistorted" text="Undistorted" isActive={activeTab === "undistorted"}/>
                 <Tab onClick={selectTab} name="projected" text="Projected" isActive={activeTab === "projected"}/>

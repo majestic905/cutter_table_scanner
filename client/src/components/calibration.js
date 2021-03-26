@@ -19,7 +19,7 @@ const Calibration = ({scan}) => {
 
     return (
         <div>
-            <Tabs activeTab={activeTab} selectTab={selectTab}>
+            <Tabs>
                 <Tab onClick={selectTab} name="original" text="Original" isActive={activeTab === "original"}/>
                 <Tab onClick={selectTab} name="undistorted" text="Undistorted" isActive={activeTab === "undistorted"}/>
             </Tabs>

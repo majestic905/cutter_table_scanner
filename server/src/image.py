@@ -52,7 +52,7 @@ class ThumbedImage:
 
 class FullImage(ThumbedImage):
     def __init__(self, name: str):
-        super().__init__(500)
+        super().__init__(1300)
         self._name = name
 
     @property
@@ -66,7 +66,7 @@ class FullImage(ThumbedImage):
 
 class GridItem(ThumbedImage):
     def __init__(self, name: str, position: CameraPosition):
-        super().__init__(450)
+        super().__init__(650)
         self._name = name
         self._position = position
 
@@ -122,17 +122,16 @@ class Grid:
 
 
 class PathBuilder:
-    def __init__(self, scan_id: str, root_directory: Path):
-        self._scan_id = scan_id
+    def __init__(self, root_directory: Path):
         self._scan_dir_path = root_directory
 
     def _uri_for(self, image: ThumbedImage, type: str, only: str = None):
         if type == 'url':
-            image_uri = flask_url_for('get_scan_image', scan_id=self._scan_id, filename=image.filename)
-            thumb_uri = flask_url_for('get_scan_image', scan_id=self._scan_id, filename=image.thumb_filename)
+            image_uri = flask_url_for('static', filename=f'scan/{image.filename}')
+            thumb_uri = flask_url_for('static', filename=f'scan/thumbs/{image.thumb_filename}')
         elif type == 'path':
             image_uri = self._scan_dir_path / image.filename
-            thumb_uri = self._scan_dir_path / image.thumb_filename
+            thumb_uri = self._scan_dir_path / 'thumbs' / image.thumb_filename
         else:
             raise ValueError('Possible values for `type` are "path" and "url"')
 

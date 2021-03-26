@@ -39,6 +39,7 @@ const useFetch = (url) => {
                     setError((await error.response.json()).message);
                 else
                     setError(error.message);
+
                 setIsLoading(false);
             }
         }

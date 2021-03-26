@@ -1,8 +1,9 @@
 import gphoto2 as gp
 
+from app import app
 from app_logger import logger
 from settings import get_settings
-from camera import DummyCamera, RealCamera, BlankCamera, CameraPosition
+from camera import DummyCamera, RealCamera, CameraPosition
 
 
 def _get_gp_cameras_by_serial():
@@ -26,28 +27,29 @@ def _get_gp_cameras_by_serial():
 
 
 def _create_camera(camera_data: dict, mapping: dict, position: CameraPosition):
-    if camera_data['type'] == 'real':
-        serial_number = camera_data['serial_number']
-        if serial_number not in mapping:
-            raise KeyError(f'Could not detect camera with serial number {serial_number} (for position {position})')
+    serial_number = camera_data['serial_number']
 
-        gp_camera = mapping[serial_number]
-        return RealCamera(camera_data, gp_camera)
-    elif camera_data['type'] == 'blank':
-        return BlankCamera(camera_data, width=4896, height=3672)
-    else:
-        raise ValueError('Camera `type` must be either "real" or "blank"')
+    if serial_number not in mapping:
+        raise KeyError(f'Could not detect camera with serial number {serial_number} (for position {position})')
+
+    return RealCamera(camera_data, mapping[serial_number])
+
+
+def _get_cameras_production():
+    mapping = _get_gp_cameras_by_serial()
+    cameras_data = get_settings()['cameras']
+    cameras_data = {CameraPosition[position]: camera_data for position, camera_data in cameras_data.items()}
+    return {position: _create_camera(camera_data, mapping, position) for position, camera_data in cameras_data.items()}
+
+
+def _get_cameras_development():
+    cameras_data = get_settings()['cameras']
+    cameras_data = {CameraPosition[position]: camera_data for position, camera_data in cameras_data.items()}
+    return {position: DummyCamera(camera_data, position) for position, camera_data in cameras_data.items()}
 
 
 def get_cameras():
-    cameras_data = get_settings()['cameras']
-    mapping = _get_gp_cameras_by_serial()
-
-    cameras = {}
-
-    for position, camera_data in cameras_data.items():
-        position = CameraPosition[position]
-        cameras[position] = _create_camera(camera_data, mapping, position)
-        # cameras[position] = DummyCamera(camera_data, position)
-
-    return cameras
+    if app.env == "development":
+        return _get_cameras_development()
+    else:
+        return _get_cameras_production()

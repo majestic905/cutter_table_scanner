@@ -1,12 +1,13 @@
 import traceback
-from datetime import datetime
 from http import HTTPStatus as status
-from flask import request, send_from_directory
+from flask import request
 
+from app import app
 from app_logger import setup_logger, cleanup_logger
 from settings import get_settings, save_settings, validate_settings
-from scan import Scan, ScanType
-from app import app
+from scan import Scan
+from scan_info import read_scan_info, write_scan_info
+
 
 
 @app.errorhandler(404)
@@ -15,30 +16,33 @@ def resource_not_found(e):
 
 
 
-@app.route('/api/scans', methods=['GET'])
-def get_scans():
-    scans = [
-        {
-            'scanId': scan.id,
-            'scanType': scan.type.name,  # it's important to send .name, see Scan.find_by_id
-            'createdAt': datetime.fromtimestamp(int(scan.timestamp)).strftime('%d %B %Y, %H:%M'),
-            'images': scan.json_urls
-        } for scan in Scan.all()
-    ]
+@app.route('/api/scan', methods=['GET'])
+def send_scan():
+    info = read_scan_info()
+    scan_type, created_at = info['scan_type'], info['created_at']
 
-    return {'scans': list(reversed(scans))}
-
-@app.route('/api/scans', methods=['POST'])
-def post_scans():
-    try:
-        scan_type = ScanType[request.args.get('type')]
-    except KeyError:
-        return {'message': 'Wrong `type` value'}, status.BAD_REQUEST
+    response = {
+        'scanType': info['scan_type'],
+        'createdAt': info['created_at'],
+    }
 
     try:
-        klass = scan_type.get_class()
-        scan = klass()
-        setup_logger(scan.log_file_path)
+        response['images'] = Scan.get_class(scan_type)().json_urls
+    except ValueError:
+        pass
+
+    return response
+
+
+@app.route('/api/scan', methods=['POST'])
+def build_scan():
+    scan_type = request.args.get('type')
+
+    try:
+        scan_class = Scan.get_class(scan_type)
+        write_scan_info(scan_type)
+        scan = scan_class()
+        setup_logger(scan.log_path)
         scan.build()
     except Exception as error:
         traceback.print_exc()
@@ -48,25 +52,15 @@ def post_scans():
 
     return {'ok': True}, status.OK  # front-end checks for non-empty response
 
-@app.route('/api/scans/<scan_id>/images/<filename>', methods=['GET'])
-def get_scan_image(scan_id, filename):
-    # TODO: this is a problem place which doesn't allow to easily put all thumb images into /thumbs/ subfolder
-    directory = Scan.find(scan_id).root_directory
-    return send_from_directory(directory, filename=filename, as_attachment=True)
-
-@app.route('/api/scans', methods=['DELETE'])
-def delete_scans():
-    Scan.delete_all()
-    return {'ok': True}, status.OK # front-end checks for non-empty response
-
 
 
 @app.route('/api/settings', methods=['GET'])
-def get_settings_handle():
+def send_settings():
     return get_settings()
 
+
 @app.route('/api/settings', methods=['POST'])
-def post_settings():
+def update_settings():
     error_msg = validate_settings(request.json)
     if error_msg is not None:
         return {'message': error_msg}, status.BAD_REQUEST

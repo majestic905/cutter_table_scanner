@@ -19,30 +19,19 @@ class CameraPosition(Enum):
 
 class Camera:
     def __init__(self, data: dict):
-        self.type = data['type']
         self.projected_image_size = data['projected_image_size']
         self.projection_points = data['projection_points']
 
+        self.serial_number = data.get('serial_number')
+        self.maker = data['maker']
+        self.model = data['model']
+
+        db = lensfunpy.Database()
+        self.lf_cam = db.find_cameras(self.maker, self.model)[0]
+        self.lf_lens = db.find_lenses(self.lf_cam)[0]
+
     def capture_to_path(self, path: Path):
         raise NotImplementedError
-
-
-class BlankCamera(Camera):
-    """capture_to_path saves blank image with dimensions specified in constructor"""
-
-    def __init__(self, camera_data: dict, width: int, height: int):
-        super().__init__(camera_data)
-        self._width = width
-        self._height = height
-
-    def capture_to_path(self, dst_path: Path):
-        shape = (self._height, self._width, 3)
-        image = np.zeros(shape, np.uint8)
-        cv2.imwrite(str(dst_path), image)
-
-    def __repr__(self):
-        args = {'width': self._width, 'height': self._height}
-        return f'BlankCamera({args})'
 
 
 class RealCamera(Camera):
@@ -50,19 +39,10 @@ class RealCamera(Camera):
 
     def __init__(self, camera_data: dict, gp_camera: gp.Camera):
         super().__init__(camera_data)
-
-        self._serial_number = camera_data.get('serial_number')
-        self._maker = camera_data['maker']
-        self._model = camera_data['model']
-
         self._gp_camera = gp_camera
 
-        db = lensfunpy.Database()
-        self.lf_cam = db.find_cameras(self._maker, self._model)[0]
-        self.lf_lens = db.find_lenses(self.lf_cam)[0]
-
     def capture_to_path(self, dst_path: Path):
-        camera, serial_number = self._gp_camera, self._serial_number
+        camera, serial_number = self._gp_camera, self.serial_number
 
         start = timer()
         logger.debug(f'[capture_to_path] {serial_number} capture start')
@@ -85,15 +65,14 @@ class RealCamera(Camera):
         logger.debug(f'[capture_to_path] {serial_number} capture_to_path took {round(end - start, 2)} seconds')
 
     def __repr__(self):
-        args = {'maker': self._maker, 'model': self._model, 'serial_number': self._serial_number}
+        args = {'maker': self.maker, 'model': self.model, 'serial_number': self.serial_number}
         return f'RealCamera({args})'
 
 
-class DummyCamera(RealCamera):
+class DummyCamera(Camera):
     """capture_to_path copies image from predefined position (from DUMMY_CAPTURES_DIR_PATH directory)"""
 
     def __init__(self, camera_data: dict, position: CameraPosition):
-        # super().__init__(camera_data, None)
         super().__init__(camera_data)
         self._position = position
 

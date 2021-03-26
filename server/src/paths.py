@@ -5,59 +5,36 @@ from app import app
 
 
 ROOT_PATH = Path(app.root_path)
-SCANS_DIR_PATH = Path(app.static_folder) / 'scans'
+STATIC_FOLDER = Path(app.static_folder)
+SCAN_PATH = STATIC_FOLDER / 'scan'
+SCAN_INFO_PATH = STATIC_FOLDER / 'scan.json'
 
 DUMMY_CAPTURES_DIR_PATH = ROOT_PATH / 'misc' / 'dummy_captures'
 
 SETTINGS_FILE_PATH = ROOT_PATH / 'settings.json'
 SETTINGS_SCHEMA_PATH = ROOT_PATH / 'settings.schema.json'
 
-_DEFAULT_SETTINGS_FILE_PATH = ROOT_PATH / 'misc' / '_settings.json'
-_DEFAULT_CAMERAS_XML_PATH = ROOT_PATH / 'misc' / '_cameras.xml'
 
-
-def _get_lensfun_dir_path():
-    if os.name == "nt":
-        return Path.home() / 'AppData' / 'Local' / 'lensfun'
-    else:
-        return Path.home() / '.local' / 'share' / 'lensfun'
-
-
-# create server/static
-def _create_static_folder():
-    static_folder = Path(app.static_folder)
-    if not static_folder.exists():
-        static_folder.mkdir()
-
-
-# create server/static/data/scans
-def _create_scans_folder():
-    if not SCANS_DIR_PATH.exists():
-        SCANS_DIR_PATH.mkdir()
-
-
-# copy server/files/_settings.json to server/static/data/settings.json
-def _copy_settings_to_static_data():
-    if not SETTINGS_FILE_PATH.exists():
-        shutil.copy(_DEFAULT_SETTINGS_FILE_PATH, SETTINGS_FILE_PATH)
+def _mkdir_scan_path():
+    if not SCAN_PATH.exists():
+        SCAN_PATH.mkdir()
 
 
 # copy server/files/_cameras.xml to ~/AppData/Local/lensfun/cameras.xml or ~/.local/share/lensfun/cameras.xml
-def _copy_lensfun_xml_to_system_user():
-    lf_dir_path = _get_lensfun_dir_path()
+def _copy_lensfun_xml():
+    if os.name == "nt":
+        lf_dir_path = Path.home() / 'AppData' / 'Local' / 'lensfun'
+    else:
+        lf_dir_path = Path.home() / '.local' / 'share' / 'lensfun'
 
     if not lf_dir_path.exists():
         lf_dir_path.mkdir()
 
-    cameras_file = lf_dir_path / 'cutter_table_scanner.xml'
-    exists = cameras_file.exists()
-    local_is_newer = exists and _DEFAULT_CAMERAS_XML_PATH.stat().st_mtime > cameras_file.stat().st_ctime
-
-    if not exists or local_is_newer:
-        shutil.copy(_DEFAULT_CAMERAS_XML_PATH, cameras_file)
+    lf_file_path = lf_dir_path / 'cutter_table_scanner.xml'
+    if not lf_file_path.exists():
+        shutil.copy(ROOT_PATH / 'misc' / '_cameras.xml', lf_file_path)
 
 
 # _create_static_folder()
-_create_scans_folder()
-_copy_settings_to_static_data()
-_copy_lensfun_xml_to_system_user()
+_mkdir_scan_path()
+_copy_lensfun_xml()

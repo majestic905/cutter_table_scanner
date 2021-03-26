@@ -1,95 +1,28 @@
 //$uv-red: #e3007b;
 //$uv-blue: #00a8ec;
 
-html, body, #root {
-  height: 100vh;
-}
-
-main.container {
+main {
   padding: 1rem;
-  height: 100vh;
 }
 
-#column-left, #column-right {
-  height: calc(100vh - 2rem);
+header {
+  position: absolute;
 }
 
-#scans-list {
-  height: 100%;
-  max-height: 100%;
-}
+.tab {
+  justify-content: flex-end;
+  margin-top: 0;
 
-#scan {
-  height: 100%;
-  max-height: 100%;
-
-  .column {
-    padding-top: .4rem;
-    padding-bottom: .4rem;
-  }
-
-  img.clickable:hover {
-    box-shadow: 0 0 .1rem .1rem #5755d9;
+  .tab-item a {
+    width: 10rem;
+    text-align: center;
   }
 }
 
-
-.tree {
-  img {
-    position: relative;
-    top: 0.2rem;
-    width: 1rem;
-    margin-right: 0.2rem;
-  }
-
-  ul {
-    margin: 0px 0px 0px 0.8rem; // icon + icon's margin
-    list-style: none;
-
-    li {
-      position: relative;
-      margin-top: 0.2rem;
-
-      span {
-        cursor: pointer;
-        &.selected {
-          font-weight: bold;
-          color: chocolate;
-        }
-      }
-
-      &:before {
-        position: absolute;
-        left: -0.7rem; // icon's margin + half width of the margin
-        top: 0px;
-        content: '';
-        display: block;
-        height: 1em;
-        width: 0.6rem; // leave 0.1rem of space before icon
-        border-left: 1px solid #ddd;
-        border-bottom: 1px solid #ddd;
-      }
-
-      &:after {
-        position: absolute;
-        left: -0.7rem; // align with :before vertical line
-        bottom: -0.6rem; // compensate margins
-        content: '';
-        display: block;
-        height: 100%;
-        border-left: 1px solid #ddd;
-      }
-
-      &.root {
-        margin: 0px 0px 0px -1.2rem;
-        &:before { display: none; }
-        &:after { display: none; }
-      }
-
-      &:last-child:after {display: none; }
-    }
-  }
+img.clickable:hover {
+  box-shadow: 0 0 .1rem .1rem #5755d9;
 }
+
 
 #settings-modal {
   .modal-container {
@@ -101,14 +34,3 @@ main.container {
     display: flex;
   }
 }
-
-
-///* Hide scrollbar for IE, Edge and Firefox */
-//.no-scrollbar {
-//  -ms-overflow-style: none;  /* IE and Edge */
-//  scrollbar-width: none;  /* Firefox */
-//}
-///* Hide scrollbar for Chrome, Safari and Opera */
-//.no-scrollbar::-webkit-scrollbar {
-//  display: none;
-//}

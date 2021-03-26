@@ -39,7 +39,7 @@ def validate_settings(json: dict):
 
     sizes = {}
     for position in CameraPosition:
-        [width, height] = json['cameras'][position.name]['projected_image_size']
+        width, height = json['cameras'][position.name]['projected_image_size']
         sizes[position.name] = {'width': width, 'height': height}
 
     if sizes['LU']['width'] != sizes['LL']['width']:

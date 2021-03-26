@@ -1,37 +1,11 @@
-import shutil
-from enum import Enum
-from datetime import datetime
-from typing import Optional, Union
-from pathlib import Path
-
 from app_logger import logger
 from cameras import get_cameras
-from camera import CameraPosition
 from processing import capture_photos, disorient_images, undistort, draw_polygons, project, compose
 from image import FullImage, Grid, PathBuilder
-from paths import SCANS_DIR_PATH, SETTINGS_FILE_PATH
-
-
-class ScanType(Enum):
-    SNAPSHOT = 'snapshot'
-    CALIBRATION = 'calibration'
-
-    def get_class(self):
-        if self == ScanType.CALIBRATION:
-            return CalibrationScan
-        elif self == ScanType.SNAPSHOT:
-            return SnapshotScan
+from paths import SCAN_PATH
 
 
 class Scan:
-    def __init__(self, scan_type: ScanType, timestamp: Optional[str] = None, **kwargs):
-        self.type = scan_type
-        self.timestamp = timestamp or str(int(datetime.now().timestamp()))
-
-        if timestamp is None:
-            self.root_directory.mkdir()
-            shutil.copy(SETTINGS_FILE_PATH, self.root_directory)
-
     def build(self):
         raise NotImplementedError
 
@@ -39,54 +13,33 @@ class Scan:
     def json_urls(self):
         raise NotImplementedError
 
-    #########
+    @property
+    def log_path(self):
+        return SCAN_PATH / 'log.txt'
 
     @staticmethod
-    def all():
-        for scan_dir_path in SCANS_DIR_PATH.iterdir():
-            yield Scan.find(scan_dir_path.name)
-
-    @staticmethod
-    def find(scan_id):
-        timestamp, scan_type = scan_id.split('_')
-        klass = ScanType[scan_type].get_class()
-        return klass(timestamp)
-
-    @staticmethod
-    def delete_all():
-        shutil.rmtree(SCANS_DIR_PATH)
-        SCANS_DIR_PATH.mkdir()
-
-    #########
-
-    @property
-    def id(self) -> str:
-        return f'{self.timestamp}_{self.type.name}'
-
-    @property
-    def root_directory(self) -> Path:
-        return SCANS_DIR_PATH / self.id
-
-    @property
-    def log_file_path(self) -> Path:
-        return self.root_directory / 'log.txt'
+    def get_class(scan_type: str):
+        if scan_type == 'snapshot':
+            return SnapshotScan
+        elif scan_type == 'calibration':
+            return CalibrationScan
+        else:
+            raise ValueError('Wrong `scan_type` value')
 
 
 class SnapshotScan(Scan):
-    def __init__(self, timestamp: Optional[str] = None, **kwargs):
-        super().__init__(ScanType.SNAPSHOT, timestamp, **kwargs)
-
+    def __init__(self):
         self.original = Grid('original')
         self.undistorted = Grid('undistorted')
         self.projected = Grid('projected')
         self.result = FullImage('result')
 
-        self.path_builder = PathBuilder(self.id, self.root_directory)
+        self.path_builder = PathBuilder(SCAN_PATH)
 
     def build(self):
-        cameras = get_cameras()
-
         try:
+            cameras = get_cameras()
+
             original_images_paths = self.path_builder.paths_for(self.original, only='image')
             logger.info('Capturing photos...')
             capture_photos(original_images_paths, cameras)
@@ -139,18 +92,16 @@ class SnapshotScan(Scan):
 
 
 class CalibrationScan(Scan):
-    def __init__(self, timestamp: Optional[str] = None, **kwargs):
-        super().__init__(ScanType.CALIBRATION, timestamp, **kwargs)
-
+    def __init__(self):
         self.original = Grid('original')
         self.undistorted = Grid('undistorted')
 
-        self.path_builder = PathBuilder(self.id, self.root_directory)
+        self.path_builder = PathBuilder(SCAN_PATH)
 
     def build(self):
-        cameras = get_cameras()
-
         try:
+            cameras = get_cameras()
+
             original_images_paths = self.path_builder.paths_for(self.original, only='image')
             logger.info('Capturing photos...')
             capture_photos(original_images_paths, cameras)
