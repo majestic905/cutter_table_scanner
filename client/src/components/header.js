@@ -2,10 +2,12 @@ import {useCallback, useEffect} from "react";
 import useModal from "../hooks/useModal";
 import useFetch from "../hooks/useFetch";
 import SettingsModal from "./settings_modal";
+import LensfunModal from "./lensfun_modal";
 
 
 const Header = ({getScan}) => {
-    const {isOpened, closeModal, openModal} = useModal();
+    const {isOpened: isOpenedSettings, closeModal: closeModalSettings, openModal: openModalSettings} = useModal();
+    const {isOpened: isOpenedLensfun, closeModal: closeModalLensfun, openModal: openModalLensfun} = useModal();
 
     const [{isLoading, response, error}, doFetch] = useFetch('/api/scan');
 
@@ -34,16 +36,17 @@ const Header = ({getScan}) => {
                     Калибровка точек
                 </button>
 
-                <button type="button" className='btn mr-2' onClick={openModal}>
+                <button type="button" className='btn mr-2' onClick={openModalSettings}>
                     Настройки
                 </button>
 
-                <button type="button" className='btn'>
+                <button type="button" className='btn' onClick={openModalLensfun}>
                     Lensfun
                 </button>
             </section>
 
-            {isOpened && <SettingsModal closeModal={closeModal} />}
+            {isOpenedSettings && <SettingsModal closeModal={closeModalSettings} />}
+            {isOpenedLensfun && <LensfunModal closeModal={closeModalLensfun} />}
         </header>
     )
 }

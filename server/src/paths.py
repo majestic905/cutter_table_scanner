@@ -14,29 +14,9 @@ SCAN_LOG_PATH = STATIC_FOLDER / 'scan.log'
 SETTINGS_FILE_PATH = ROOT_PATH / 'settings.json'
 SETTINGS_SCHEMA_PATH = ROOT_PATH / 'settings.schema.json'
 
-DUMMY_CAPTURES_PATH = ROOT_PATH / 'misc' / 'dummy_captures'
+DEFAULT_LENSFUN_XML_PATH = ROOT_PATH / 'lensfun.xml'
+DUMMY_CAPTURES_PATH = ROOT_PATH.parent / 'eggs' / 'dummy_captures'
 
 
-def _mkdir_scan_path():
-    if not SCAN_IMAGES_PATH.exists():
-        SCAN_IMAGES_PATH.mkdir()
-
-
-# copy server/files/_cameras.xml to ~/AppData/Local/lensfun/cameras.xml or ~/.local/share/lensfun/cameras.xml
-def _copy_lensfun_xml():
-    if os.name == "nt":
-        lf_dir_path = Path.home() / 'AppData' / 'Local' / 'lensfun'
-    else:
-        lf_dir_path = Path.home() / '.local' / 'share' / 'lensfun'
-
-    if not lf_dir_path.exists():
-        lf_dir_path.mkdir()
-
-    lf_file_path = lf_dir_path / 'cutter_table_scanner.xml'
-    if not lf_file_path.exists():
-        shutil.copy(ROOT_PATH / 'misc' / '_cameras.xml', lf_file_path)
-
-
-# _create_static_folder()
-_mkdir_scan_path()
-_copy_lensfun_xml()
+if not SCAN_IMAGES_PATH.exists():
+    SCAN_IMAGES_PATH.mkdir()

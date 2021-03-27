@@ -3,29 +3,16 @@ import useFetch from "../hooks/useFetch";
 import cx from "classnames";
 
 
-function getIndentedJSON(json, space = 4) {
-    const replacer = function(key, value) {
-       if (value instanceof Array)
-          return JSON.stringify(value);
-       return value;
-    };
-
-    return JSON.stringify(json, replacer, space)
-        .replace(/\"\[/g, '[')
-        .replace(/\]\"/g, ']');
-}
-
-
-const SettingsModal = ({closeModal}) => {
+const LensfunModal = ({closeModal}) => {
     const [data, setData] = useState();
 
-    const [{isLoading, response, error}, doFetch] = useFetch('/api/settings');  // for both GET and POST
+    const [{isLoading, response, error}, doFetch] = useFetch('/api/lensfun');  // for both GET and POST
 
     useEffect(doFetch, [doFetch]);
 
     useEffect(() => {
         if (response !== undefined && !data) { // GET
-            setData(getIndentedJSON(response));
+            setData(response.xml);
         } else if (response !== undefined && data) // POST
             closeModal();
     }, [response, setData, closeModal]);
@@ -35,8 +22,8 @@ const SettingsModal = ({closeModal}) => {
 
         doFetch({
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: ev.target.elements.settings.value
+            headers: { 'Content-Type': 'text/xml; charset=utf-8' },
+            body: ev.target.elements.lensfun.value
         });
     }, [doFetch]);
 
@@ -50,21 +37,13 @@ const SettingsModal = ({closeModal}) => {
                     <button type="button" className="btn btn-link float-right" onClick={closeModal}>Закрыть</button>
                     <input type="submit" className={btnClassName} value="Отправить"/>
 
-                    <div className="modal-title h5">Настройки</div>
+                    <div className="modal-title h5">Lensfun XML</div>
                 </div>
-                <ul className="mt-0">
-                   <li className="mt-0">
-                       Значения table_section_size (миллиметры) напрямую в программе не используются, они здесь для того чтобы были.
-                   </li>
-                   <li className="mt-0">
-                       Значения projected_image_size (пиксели) используются; задаются вручную; должны быть строго пропорциональны значениям table_section_size!
-                   </li>
-               </ul>
                 {error && <div className="modal-header pt-0">
                      <div className="toast toast-error">{error}</div>
                 </div>}
                 <div className="modal-body pt-0">
-                    {data && <textarea name="settings" defaultValue={data} className="form-input"/>}
+                    {data && <textarea name="lensfun" defaultValue={data} className="form-input"/>}
                     {!data && <div className="loading loading-lg"/>}
                 </div>
             </div>
@@ -73,4 +52,4 @@ const SettingsModal = ({closeModal}) => {
 };
 
 
-export default SettingsModal;
+export default LensfunModal;

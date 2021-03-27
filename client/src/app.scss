@@ -7,6 +7,10 @@ main { padding: 1rem; }
   header { position: absolute; }
 }
 
+textarea {
+  font-family: Consolas, Hack, "Ubuntu Mono", "SF Mono", monospace;
+}
+
 .tab {
   justify-content: flex-end;
   margin-top: 0;
@@ -29,14 +33,13 @@ img.clickable:hover {
 #log {
   margin-top: .55rem;
   height: 30rem;
-  font-family: Consolas, Hack, monospace;
 }
 
 #result {
   margin-top: .55rem;
 }
 
-#settings-modal {
+.modal {
   .modal-container {
     min-height: 90vh;
     max-width: 90vw;

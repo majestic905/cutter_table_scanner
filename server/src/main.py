@@ -4,6 +4,7 @@ from flask import request
 
 from app import app
 from app_logger import read_log, clear_log
+from lensfun import read_lensfun_xml, save_lensfun_xml, validate_xml
 from settings import get_settings, save_settings, validate_settings
 from scan import Scan
 from scan_info import read_scan_info, write_scan_info
@@ -13,7 +14,6 @@ from scan_info import read_scan_info, write_scan_info
 @app.errorhandler(404)
 def resource_not_found(e):
     return {"message": str(e)}, 404
-
 
 
 @app.route('/api/scan', methods=['GET'])
@@ -67,6 +67,23 @@ def update_settings():
     save_settings(request.json)
     return '', status.NO_CONTENT
 
+
+@app.route('/api/lensfun', methods=['GET'])
+def send_lensfun_xml():
+    return {'xml': read_lensfun_xml()}
+
+
+@app.route('/api/lensfun', methods=['POST'])
+def update_lensfun_xml():
+    text = request.data.decode("utf-8")
+    error = validate_xml(text)
+
+    if error is not None:
+        line, column = error
+        return {'message': f'XML parsing error, line {line}, column {column}'}, status.BAD_REQUEST
+
+    save_lensfun_xml(text)
+    return '', status.NO_CONTENT
 
 
 @app.route('/', methods=['GET'])
