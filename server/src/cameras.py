@@ -38,13 +38,11 @@ def _create_camera(camera_data: dict, mapping: dict, position: CameraPosition):
 def _get_cameras_production():
     mapping = _get_gp_cameras_by_serial()
     cameras_data = get_cameras_data()
-    cameras_data = {CameraPosition[position]: camera_data for position, camera_data in cameras_data.items()}
     return {position: _create_camera(camera_data, mapping, position) for position, camera_data in cameras_data.items()}
 
 
 def _get_cameras_development():
     cameras_data = get_cameras_data()
-    cameras_data = {CameraPosition[position]: camera_data for position, camera_data in cameras_data.items()}
     return {position: DummyCamera(camera_data, position) for position, camera_data in cameras_data.items()}
 
 

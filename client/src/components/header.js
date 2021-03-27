@@ -1,4 +1,5 @@
 import {useCallback, useEffect} from "react";
+import cx from "classnames";
 import useModal from "../hooks/useModal";
 import useFetch from "../hooks/useFetch";
 import SettingsModal from "./settings_modal";
@@ -28,19 +29,27 @@ const Header = ({getScan}) => {
     return (
         <header className="navbar">
             <section className="navbar-section">
-                <button className="btn btn-primary mr-2" onClick={() => requestScan('snapshot')}>
+                <button className={cx("btn btn-primary mr-2", {loading: isLoading})}
+                        onClick={() => requestScan('snapshot')}
+                >
                     Сканировать
                 </button>
 
-                <button className="btn btn-primary mr-2" onClick={() => requestScan('calibration')}>
+                <button className={cx("btn btn-primary mr-2", {loading: isLoading})}
+                        onClick={() => requestScan('calibration')}
+                >
                     Калибровка точек
                 </button>
 
-                <button type="button" className='btn mr-2' onClick={openModalSettings}>
+                <button type="button" className={cx('btn mr-2', {loading: isLoading})}
+                        onClick={openModalSettings}
+                >
                     Настройки
                 </button>
 
-                <button type="button" className='btn' onClick={openModalLensfun}>
+                <button type="button" className={cx('btn', {loading: isLoading})}
+                        onClick={openModalLensfun}
+                >
                     Lensfun
                 </button>
             </section>

@@ -1,8 +1,10 @@
 import os
+import lensfunpy
 from xml.etree.ElementTree import XML, ParseError
 from shutil import copy
 from pathlib import Path
 from paths import DEFAULT_LENSFUN_XML_PATH
+from camera import Camera
 
 
 LENSFUN_XML_FILE_NAME = 'cutter_table_scanner.xml'
@@ -45,4 +47,22 @@ def save_lensfun_xml(text: str):
     _get_lensfun_file().write_text(text)
 
 
+def get_undist_coords(camera: Camera, image_size: tuple):
+    width, height = image_size
+    key = (camera.maker, camera.model, width, height)
+
+    if key not in _undist_coords_repo:
+        db = lensfunpy.Database()
+        lf_cam = db.find_cameras(camera.maker, camera.model)[0]
+        lf_lens = db.find_lenses(lf_cam)[0]
+
+        mod = lensfunpy.Modifier(lf_lens, lf_cam.crop_factor, width, height)
+        mod.initialize(lf_lens.min_focal, 0, 0)  # aperture and focus distance are not used for distortion
+
+        _undist_coords_repo[key] = mod.apply_geometry_distortion()
+
+    return _undist_coords_repo[key]
+
+
 _copy_lensfun_xml()
+_undist_coords_repo = {}

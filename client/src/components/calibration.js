@@ -7,16 +7,13 @@ const Calibration = ({scan}) => {
     const [activeTab, setActiveTab] = useState('undistorted');
     const selectTab = useCallback(ev => setActiveTab(ev.currentTarget.dataset.tabName), [setActiveTab]);
 
-    const images = {};
-    for (const name of ['original', 'undistorted']) {
-        images[name] = {};
+    const images = {original: {}, undistorted: {}};
+    for (const name in images) {
         for (const position of ['LU', 'LL', 'RU', 'RL']) {
-            const src = scan.images[name][position].thumb;
-            images[name][position] = {src, alt: src};
+            const {image, thumb} = scan.images[name][position];
+            images[name][position] = {src: thumb, alt: image, url: image};
         }
     }
-    for (const position of ['LU', 'LL', 'RU', 'RL'])
-        images['undistorted'][position].url = scan.images['undistorted'][position].image;
 
     return (
         <div>
@@ -26,7 +23,7 @@ const Calibration = ({scan}) => {
                 <Tab onClick={selectTab} name="log" text="Log" isActive={activeTab === "log"}/>
             </Tabs>
 
-            {activeTab === "original" && <ImagesGrid images={images.original}/>}
+            {activeTab === "original" && <ImagesGrid images={images.original} isClickable/>}
             {activeTab === "undistorted" && <ImagesGrid images={images.undistorted} isClickable/>}
             {activeTab === "log" && <Log text={scan.log}/>}
         </div>

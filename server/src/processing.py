@@ -1,13 +1,13 @@
 import numpy as np
-import lensfunpy
 import cv2
 import exif
-from app_logger import logger
+from timeit import default_timer as timer
 from pathlib import Path
 from threading import Thread
 from typing import Dict
-from timeit import default_timer as timer
+from app_logger import logger
 from camera import Camera, CameraPosition
+from lensfun import get_undist_coords
 
 
 ImagesType = Dict[CameraPosition, np.ndarray]
@@ -57,11 +57,7 @@ def _undistort_image(image: np.ndarray, camera: Camera):
         return image
 
     height, width = image.shape[0], image.shape[1]
-
-    mod = lensfunpy.Modifier(camera.lf_lens, camera.lf_cam.crop_factor, width, height)
-    mod.initialize(camera.lf_lens.min_focal, 0, 0)  # aperture and focus distance are not used for distortion
-
-    undist_coords = mod.apply_geometry_distortion()
+    undist_coords = get_undist_coords(camera, (width, height))
     return cv2.remap(image, undist_coords, None, cv2.INTER_LANCZOS4)
 
 
@@ -73,7 +69,7 @@ def _draw_polygon(image: np.ndarray, camera: Camera):
     points = camera.projection_points
     points = [points['top_left'], points['top_right'], points['bottom_right'], points['bottom_left']]
     points = np.array(points, dtype=np.int32).reshape((-1, 1, 2))
-    return cv2.polylines(image, [points], True, (0,0,255), thickness=8)
+    return cv2.polylines(image, [points], True, (0, 0, 255), thickness=8)
 
 
 def draw_polygons(images, cameras):

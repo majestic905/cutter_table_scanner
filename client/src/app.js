@@ -17,10 +17,10 @@ function App() {
         if (response)
             setScan(response);
         else if (error)
-            alert(`Ошибка при загрузке списка: ${error}`);
+            alert(`Ошибка при загрузке скана: ${error}`);
     }, [response, error]);
 
-    if (isLoading && !response)
+    if (isLoading)
         return <div className="loading mt-2"/>;
 
     return (

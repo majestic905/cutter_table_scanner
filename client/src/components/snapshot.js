@@ -3,10 +3,12 @@ import Log from "./log";
 import {Tab, Tabs, ImagesGrid, ClickableImage} from './shared';
 
 
-const ResultImage = (props) => {
+const ResultImage = ({url, createdAt}) => {
+    createdAt = new Date(createdAt).toISOString().slice(0, 19).replace(/[-:T]/g, '_');
+
     return (
         <div className="container grid-lg">
-            <ClickableImage {...props} id="result"/>
+            <ClickableImage src={url} alt={url} url={url} filename={`result_${createdAt}.jpg`} id="result"/>
         </div>
     )
 }
@@ -16,19 +18,12 @@ const Snapshot = ({scan}) => {
     const [activeTab, setActiveTab] = useState('result');
     const selectTab = useCallback(ev => setActiveTab(ev.currentTarget.dataset.tabName), [setActiveTab]);
 
-    const images = {};
+    const images = {original: {}, undistorted: {}, projected: {}, result: scan.images.result};
     for (const name of ['original', 'undistorted', 'projected']) {
-        images[name] = {};
         for (const position of ['LU', 'LL', 'RU', 'RL']) {
-            const src = scan.images[name][position].thumb;
-            images[name][position] = {src, alt: src};
+            const {image, thumb} = scan.images[name][position];
+            images[name][position] = {src: thumb, alt: image, url: image};
         }
-    }
-    images.result = {
-        src: scan.images.result.thumb,
-        alt: scan.images.result.thumb,
-        url: scan.images.result.image,
-        filename: `${scan.scanId}_result.jpg`
     }
 
     return (
@@ -41,10 +36,10 @@ const Snapshot = ({scan}) => {
                 <Tab onClick={selectTab} name="log" text="Log" isActive={activeTab === "log"}/>
             </Tabs>
 
-            {activeTab === "original" && <ImagesGrid images={images.original}/>}
-            {activeTab === "undistorted" && <ImagesGrid images={images.undistorted}/>}
-            {activeTab === "projected" && <ImagesGrid images={images.projected}/>}
-            {activeTab === "result" && <ResultImage {...images.result}/>}
+            {activeTab === "original" && <ImagesGrid images={images.original} isClickable/>}
+            {activeTab === "undistorted" && <ImagesGrid images={images.undistorted} isClickable/>}
+            {activeTab === "projected" && <ImagesGrid images={images.projected} isClickable/>}
+            {activeTab === "result" && <ResultImage url={images.result.image} createdAt={scan.createdAt}/>}
             {activeTab === "log" && <Log text={scan.log}/>}
         </div>
     )
