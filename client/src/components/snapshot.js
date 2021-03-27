@@ -1,11 +1,12 @@
 import {useCallback, useState} from "react";
+import Log from "./log";
 import {Tab, Tabs, ImagesGrid, ClickableImage} from './shared';
 
 
 const ResultImage = (props) => {
     return (
         <div className="container grid-lg">
-            <ClickableImage {...props}/>
+            <ClickableImage {...props} id="result"/>
         </div>
     )
 }
@@ -37,12 +38,14 @@ const Snapshot = ({scan}) => {
                 <Tab onClick={selectTab} name="undistorted" text="Undistorted" isActive={activeTab === "undistorted"}/>
                 <Tab onClick={selectTab} name="projected" text="Projected" isActive={activeTab === "projected"}/>
                 <Tab onClick={selectTab} name="result" text="Result" isActive={activeTab === "result"}/>
+                <Tab onClick={selectTab} name="log" text="Log" isActive={activeTab === "log"}/>
             </Tabs>
 
             {activeTab === "original" && <ImagesGrid images={images.original}/>}
             {activeTab === "undistorted" && <ImagesGrid images={images.undistorted}/>}
             {activeTab === "projected" && <ImagesGrid images={images.projected}/>}
             {activeTab === "result" && <ResultImage {...images.result}/>}
+            {activeTab === "log" && <Log text={scan.log}/>}
         </div>
     )
 }

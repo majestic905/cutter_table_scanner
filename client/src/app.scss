@@ -1,12 +1,10 @@
 //$uv-red: #e3007b;
 //$uv-blue: #00a8ec;
 
-main {
-  padding: 1rem;
-}
+main { padding: 1rem; }
 
-header {
-  position: absolute;
+@media screen and (min-width: 1280px) {
+  header { position: absolute; }
 }
 
 .tab {
@@ -14,15 +12,29 @@ header {
   margin-top: 0;
 
   .tab-item a {
-    width: 10rem;
+    width: 7rem;
     text-align: center;
   }
+}
+
+.images-grid .column {
+  padding-top: .4rem;
+  padding-bottom: .4rem;
 }
 
 img.clickable:hover {
   box-shadow: 0 0 .1rem .1rem #5755d9;
 }
 
+#log {
+  margin-top: .55rem;
+  height: 30rem;
+  font-family: Consolas, Hack, monospace;
+}
+
+#result {
+  margin-top: .55rem;
+}
 
 #settings-modal {
   .modal-container {

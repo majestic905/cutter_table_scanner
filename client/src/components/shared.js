@@ -71,7 +71,7 @@ export const ImagesGrid = ({images, isClickable}) => {
     )
 
     return (
-        <div className="container grid-lg">
+        <div className="container grid-lg images-grid">
             <div className="columns">
                 {children}
             </div>

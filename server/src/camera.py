@@ -1,13 +1,11 @@
 import shutil
-import cv2
-import numpy as np
 import lensfunpy
 import gphoto2 as gp
 from pathlib import Path
 from enum import Enum
 from timeit import default_timer as timer
 from app_logger import logger
-from paths import DUMMY_CAPTURES_DIR_PATH
+from paths import DUMMY_CAPTURES_PATH
 
 
 class CameraPosition(Enum):
@@ -77,7 +75,7 @@ class DummyCamera(Camera):
         self._position = position
 
     def capture_to_path(self, dst_path: Path):
-        src_path = DUMMY_CAPTURES_DIR_PATH / f'{self._position.value}.jpg'
+        src_path = DUMMY_CAPTURES_PATH / f'{self._position.value}.jpg'
         shutil.copy(src_path, dst_path)
 
     def __repr__(self):

@@ -6,18 +6,20 @@ from app import app
 
 ROOT_PATH = Path(app.root_path)
 STATIC_FOLDER = Path(app.static_folder)
-SCAN_PATH = STATIC_FOLDER / 'scan'
-SCAN_INFO_PATH = STATIC_FOLDER / 'scan.json'
 
-DUMMY_CAPTURES_DIR_PATH = ROOT_PATH / 'misc' / 'dummy_captures'
+SCAN_IMAGES_PATH = STATIC_FOLDER / 'scan'
+SCAN_INFO_PATH = STATIC_FOLDER / 'scan.json'
+SCAN_LOG_PATH = STATIC_FOLDER / 'scan.log'
 
 SETTINGS_FILE_PATH = ROOT_PATH / 'settings.json'
 SETTINGS_SCHEMA_PATH = ROOT_PATH / 'settings.schema.json'
 
+DUMMY_CAPTURES_PATH = ROOT_PATH / 'misc' / 'dummy_captures'
+
 
 def _mkdir_scan_path():
-    if not SCAN_PATH.exists():
-        SCAN_PATH.mkdir()
+    if not SCAN_IMAGES_PATH.exists():
+        SCAN_IMAGES_PATH.mkdir()
 
 
 # copy server/files/_cameras.xml to ~/AppData/Local/lensfun/cameras.xml or ~/.local/share/lensfun/cameras.xml

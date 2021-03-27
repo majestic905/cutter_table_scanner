@@ -1,7 +1,11 @@
 import json
+from pathlib import Path
+from app import app
 from jsonschema import validate, ValidationError
 from camera import CameraPosition
-from paths import SETTINGS_FILE_PATH, SETTINGS_SCHEMA_PATH
+
+SETTINGS_FILE_PATH = Path(app.root_path) / 'settings.json'
+SETTINGS_SCHEMA_PATH = Path(app.root_path) / 'settings.schema.json'
 
 
 def _read_schema():
@@ -26,9 +30,9 @@ def save_settings(new_settings: dict):
         json.dump(new_settings, file, indent=4)
 
 
-def validate_settings(json: dict):
+def validate_settings(json_data: dict):
     try:
-        validate(json, _schema)
+        validate(json_data, _schema)
     except ValidationError as error:
         if len(error.path) > 0:
             path = list(error.path)

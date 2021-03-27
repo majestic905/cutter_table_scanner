@@ -5,6 +5,7 @@ from typing import Union, Dict
 from flask import url_for as flask_url_for
 from processing import ImagesType, PathsType, create_thumbnail
 from camera import CameraPosition
+from paths import SCAN_IMAGES_PATH
 
 
 PathOrPaths = Union[Path, Dict[str, Path]]
@@ -122,16 +123,13 @@ class Grid:
 
 
 class PathBuilder:
-    def __init__(self, root_directory: Path):
-        self._scan_dir_path = root_directory
-
     def _uri_for(self, image: ThumbedImage, type: str, only: str = None):
         if type == 'url':
             image_uri = flask_url_for('static', filename=f'scan/{image.filename}')
             thumb_uri = flask_url_for('static', filename=f'scan/thumbs/{image.thumb_filename}')
         elif type == 'path':
-            image_uri = self._scan_dir_path / image.filename
-            thumb_uri = self._scan_dir_path / 'thumbs' / image.thumb_filename
+            image_uri = SCAN_IMAGES_PATH / image.filename
+            thumb_uri = SCAN_IMAGES_PATH / 'thumbs' / image.thumb_filename
         else:
             raise ValueError('Possible values for `type` are "path" and "url"')
 
@@ -155,3 +153,6 @@ class PathBuilder:
 
     def urls_for(self, grid: Grid, only: str = None) -> Dict[CameraPosition, StrOrStrs]:
         return {position.name: self.url_for(grid.items[position], only) for position in CameraPosition}
+
+    def create_thumbs_folder(self):
+        return (SCAN_IMAGES_PATH / 'thumbs').mkdir(exist_ok=True)

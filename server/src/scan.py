@@ -1,8 +1,9 @@
+from shutil import rmtree
 from app_logger import logger
 from cameras import get_cameras
 from processing import capture_photos, disorient_images, undistort, draw_polygons, project, compose
 from image import FullImage, Grid, PathBuilder
-from paths import SCAN_PATH
+from paths import SCAN_IMAGES_PATH
 
 
 class Scan:
@@ -13,10 +14,6 @@ class Scan:
     def json_urls(self):
         raise NotImplementedError
 
-    @property
-    def log_path(self):
-        return SCAN_PATH / 'log.txt'
-
     @staticmethod
     def get_class(scan_type: str):
         if scan_type == 'snapshot':
@@ -26,6 +23,10 @@ class Scan:
         else:
             raise ValueError('Wrong `scan_type` value')
 
+    def clear_folder(self):
+        rmtree(SCAN_IMAGES_PATH)
+        SCAN_IMAGES_PATH.mkdir()
+
 
 class SnapshotScan(Scan):
     def __init__(self):
@@ -34,11 +35,14 @@ class SnapshotScan(Scan):
         self.projected = Grid('projected')
         self.result = FullImage('result')
 
-        self.path_builder = PathBuilder(SCAN_PATH)
+        self.path_builder = PathBuilder()
 
     def build(self):
         try:
             cameras = get_cameras()
+
+            self.clear_folder()
+            self.path_builder.create_thumbs_folder()
 
             original_images_paths = self.path_builder.paths_for(self.original, only='image')
             logger.info('Capturing photos...')
@@ -96,11 +100,14 @@ class CalibrationScan(Scan):
         self.original = Grid('original')
         self.undistorted = Grid('undistorted')
 
-        self.path_builder = PathBuilder(SCAN_PATH)
+        self.path_builder = PathBuilder()
 
     def build(self):
         try:
             cameras = get_cameras()
+
+            self.clear_folder()
+            self.path_builder.create_thumbs_folder()
 
             original_images_paths = self.path_builder.paths_for(self.original, only='image')
             logger.info('Capturing photos...')

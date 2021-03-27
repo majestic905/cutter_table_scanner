@@ -3,7 +3,7 @@ from http import HTTPStatus as status
 from flask import request
 
 from app import app
-from app_logger import setup_logger, cleanup_logger
+from app_logger import read_log, clear_log
 from settings import get_settings, save_settings, validate_settings
 from scan import Scan
 from scan_info import read_scan_info, write_scan_info
@@ -24,6 +24,7 @@ def send_scan():
     response = {
         'scanType': info['scan_type'],
         'createdAt': info['created_at'],
+        'log': read_log()
     }
 
     try:
@@ -41,14 +42,12 @@ def build_scan():
     try:
         scan_class = Scan.get_class(scan_type)
         write_scan_info(scan_type)
+        clear_log()
         scan = scan_class()
-        setup_logger(scan.log_path)
         scan.build()
     except Exception as error:
         traceback.print_exc()
         return {'message': str(error)}, status.INTERNAL_SERVER_ERROR
-    finally:
-        cleanup_logger()
 
     return {'ok': True}, status.OK  # front-end checks for non-empty response
 
