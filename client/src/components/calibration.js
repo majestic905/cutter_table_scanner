@@ -1,6 +1,7 @@
 import {useCallback, useState} from "react";
 import Log from "./log";
-import {Tab, Tabs, ImagesGrid} from './shared';
+import {Tabs, Tab} from "./shared/tabs";
+import {ImagesGrid} from "./shared/images";
 
 
 const Calibration = ({scan}) => {
@@ -11,7 +12,7 @@ const Calibration = ({scan}) => {
     for (const name in images) {
         for (const position of ['LU', 'LL', 'RU', 'RL']) {
             const {image, thumb} = scan.images[name][position];
-            images[name][position] = {src: thumb, alt: image, url: image};
+            images[name][position] = {src: `${thumb}?${scan.createdAt}`, alt: image, url: image};
         }
     }
 

@@ -1,6 +1,7 @@
 import {useCallback, useState} from "react";
 import Log from "./log";
-import {Tab, Tabs, ImagesGrid, ClickableImage} from './shared';
+import {Tabs, Tab} from "./shared/tabs";
+import {ImagesGrid, DownloadableImage} from "./shared/images";
 
 
 const ResultImage = ({url, createdAt}) => {
@@ -8,7 +9,7 @@ const ResultImage = ({url, createdAt}) => {
 
     return (
         <div className="container grid-lg">
-            <ClickableImage src={url} alt={url} url={url} filename={`result_${createdAt}.jpg`} id="result"/>
+            <DownloadableImage src={url} alt={url} url={url} download={`result_${createdAt}.jpg`} id="result"/>
         </div>
     )
 }
@@ -22,7 +23,7 @@ const Snapshot = ({scan}) => {
     for (const name of ['original', 'undistorted', 'projected']) {
         for (const position of ['LU', 'LL', 'RU', 'RL']) {
             const {image, thumb} = scan.images[name][position];
-            images[name][position] = {src: thumb, alt: image, url: image};
+            images[name][position] = {src: `${thumb}?${scan.createdAt}`, alt: image, url: image};
         }
     }
 

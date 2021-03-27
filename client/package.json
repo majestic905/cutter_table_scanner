@@ -5,17 +5,13 @@
   "proxy": "http://localhost:5000",
   "homepage": "build",
   "dependencies": {
-    "@testing-library/jest-dom": "^5.11.9",
-    "@testing-library/react": "^11.2.3",
-    "@testing-library/user-event": "^12.6.2",
     "classnames": "^2.2.6",
     "ky": "^0.27.0",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-scripts": "4.0.1",
     "sass": "^1.32.6",
-    "spectre.css": "^0.5.9",
-    "web-vitals": "^0.2.4"
+    "spectre.css": "^0.5.9"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -25,8 +21,7 @@
   },
   "eslintConfig": {
     "extends": [
-      "react-app",
-      "react-app/jest"
+      "react-app"
     ]
   },
   "browserslist": {
