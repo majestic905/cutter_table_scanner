@@ -2,7 +2,7 @@ import gphoto2 as gp
 
 from app import app
 from app_logger import logger
-from settings import get_settings
+from cameras_data import get_cameras_data
 from camera import DummyCamera, RealCamera, CameraPosition
 
 
@@ -37,13 +37,13 @@ def _create_camera(camera_data: dict, mapping: dict, position: CameraPosition):
 
 def _get_cameras_production():
     mapping = _get_gp_cameras_by_serial()
-    cameras_data = get_settings()['cameras']
+    cameras_data = get_cameras_data()
     cameras_data = {CameraPosition[position]: camera_data for position, camera_data in cameras_data.items()}
     return {position: _create_camera(camera_data, mapping, position) for position, camera_data in cameras_data.items()}
 
 
 def _get_cameras_development():
-    cameras_data = get_settings()['cameras']
+    cameras_data = get_cameras_data()
     cameras_data = {CameraPosition[position]: camera_data for position, camera_data in cameras_data.items()}
     return {position: DummyCamera(camera_data, position) for position, camera_data in cameras_data.items()}
 

@@ -34,7 +34,7 @@ def validate_xml(text: str):
     try:
         XML(text)
     except ParseError as error:
-        return error.position
+        return str(error)
 
 
 def read_lensfun_xml():

@@ -1,0 +1,126 @@
+{
+    "LU": {
+        "maker": "Nikon",
+        "model": "Coolpix S9400",
+        "projected_image_size": [
+            1500,
+            1350
+        ],
+        "projection_points": {
+            "bottom_left": [
+                835,
+                3149
+            ],
+            "bottom_right": [
+                4150,
+                3160
+            ],
+            "top_left": [
+                873,
+                189
+            ],
+            "top_right": [
+                4135,
+                200
+            ]
+        },
+        "serial_number": "000041116619",
+        "table_section_size": [
+            1500,
+            1500
+        ]
+    },
+    "LL": {
+        "maker": "Nikon",
+        "model": "Coolpix S9400",
+        "projected_image_size": [
+            1500,
+            1350
+        ],
+        "projection_points": {
+            "bottom_left": [
+                952,
+                3563
+            ],
+            "bottom_right": [
+                4266,
+                3529
+            ],
+            "top_left": [
+                903,
+                590
+            ],
+            "top_right": [
+                4216,
+                527
+            ]
+        },
+        "serial_number": "000041130921",
+        "table_section_size": [
+            1500,
+            1500
+        ]
+    },
+    "RL": {
+        "maker": "Nikon",
+        "model": "Coolpix S9400",
+        "projected_image_size": [
+            1500,
+            1350
+        ],
+        "projection_points": {
+            "bottom_left": [
+                882,
+                3665
+            ],
+            "bottom_right": [
+                4295,
+                3640
+            ],
+            "top_left": [
+                866,
+                604
+            ],
+            "top_right": [
+                4246,
+                563
+            ]
+        },
+        "serial_number": "000041110299",
+        "table_section_size": [
+            1500,
+            1500
+        ]
+    },
+    "RU": {
+        "maker": "Nikon",
+        "model": "Coolpix S9400",
+        "projected_image_size": [
+            1500,
+            1350
+        ],
+        "projection_points": {
+            "bottom_left": [
+                809,
+                3138
+            ],
+            "bottom_right": [
+                4188,
+                3121
+            ],
+            "top_left": [
+                800,
+                92
+            ],
+            "top_right": [
+                4173,
+                78
+            ]
+        },
+        "serial_number": "000043107073",
+        "table_section_size": [
+            1500,
+            1500
+        ]
+    }
+}

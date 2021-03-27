@@ -3,29 +3,40 @@ import useFetch from "../hooks/useFetch";
 import cx from "classnames";
 
 
-function getIndentedJSON(json, space = 4) {
-    const replacer = function(key, value) {
-       if (value instanceof Array)
-          return JSON.stringify(value);
-       return value;
-    };
-
-    return JSON.stringify(json, replacer, space)
-        .replace(/\"\[/g, '[')
-        .replace(/\]\"/g, ']');
+const CamerasColumns = ({cameras}) => {
+    return (
+        <div id="cameras" className="columns">
+            <div className="column col-6">
+                <label className="form-label text-bold" htmlFor="camera-LU">LU: Left Upper</label>
+                <textarea id="camera-LU" name="LU" className="form-input" defaultValue={cameras['LU']}/>
+            </div>
+            <div className="column col-6">
+                <label className="form-label text-bold" htmlFor="camera-RU">RU: Right Upper</label>
+                <textarea id="camera-RU" name="RU" className="form-input" defaultValue={cameras['RU']}/>
+            </div>
+            <div className="column col-6">
+                <label className="form-label text-bold" htmlFor="camera-LL">LL: Left Lower</label>
+                <textarea id="camera-LL" name="LL" className="form-input" defaultValue={cameras['LL']}/>
+            </div>
+            <div className="column col-6">
+                <label className="form-label text-bold" htmlFor="camera-RL">RL: Right Lower</label>
+                <textarea id="camera-RL" name="RL" className="form-input" defaultValue={cameras['RL']}/>
+            </div>
+        </div>
+    )
 }
 
 
 const SettingsModal = ({closeModal}) => {
     const [data, setData] = useState();
 
-    const [{isLoading, response, error}, doFetch] = useFetch('/api/settings');  // for both GET and POST
+    const [{isLoading, response, error}, doFetch] = useFetch('/api/cameras');  // for both GET and POST
 
     useEffect(doFetch, [doFetch]);
 
     useEffect(() => {
         if (response !== undefined && !data) { // GET
-            setData(getIndentedJSON(response));
+            setData(response);
         } else if (response !== undefined && data) // POST
             closeModal();
     }, [response, setData, closeModal]);
@@ -33,10 +44,15 @@ const SettingsModal = ({closeModal}) => {
     const doSubmit = useCallback(ev => {
         ev.preventDefault();
 
+        const body = {};
+        for (const position of ['LU', 'LL', 'RL', 'RU'])
+            body[position] = ev.target.elements[position].value;
+
+
         doFetch({
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: ev.target.elements.settings.value
+            body: JSON.stringify(body)
         });
     }, [doFetch]);
 
@@ -64,8 +80,8 @@ const SettingsModal = ({closeModal}) => {
                      <div className="toast toast-error">{error}</div>
                 </div>}
                 <div className="modal-body pt-0">
-                    {data && <textarea name="settings" defaultValue={data} className="form-input"/>}
-                    {!data && <div className="loading loading-lg"/>}
+                    {data && <CamerasColumns cameras={data}/>}
+                    {isLoading && <div className="loading loading-lg"/>}
                 </div>
             </div>
         </form>

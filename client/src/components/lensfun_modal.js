@@ -22,7 +22,7 @@ const LensfunModal = ({closeModal}) => {
 
         doFetch({
             method: 'POST',
-            headers: { 'Content-Type': 'text/xml; charset=utf-8' },
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
             body: ev.target.elements.lensfun.value
         });
     }, [doFetch]);

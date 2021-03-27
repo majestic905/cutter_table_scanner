@@ -30,13 +30,20 @@ img.clickable:hover {
   box-shadow: 0 0 .1rem .1rem #5755d9;
 }
 
-#log {
+#log, #result {
   margin-top: .55rem;
+}
+
+#log {
   height: 30rem;
 }
 
-#result {
-  margin-top: .55rem;
+#cameras {
+  width: 100%;
+
+  textarea {
+    height: 14rem;
+  }
 }
 
 .modal {
@@ -47,5 +54,8 @@ img.clickable:hover {
   .modal-body {
     flex: 1;
     display: flex;
+  }
+  .toast-error {
+    white-space: pre;
   }
 }

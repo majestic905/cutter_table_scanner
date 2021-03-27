@@ -11,8 +11,8 @@ SCAN_IMAGES_PATH = STATIC_FOLDER / 'scan'
 SCAN_INFO_PATH = STATIC_FOLDER / 'scan.json'
 SCAN_LOG_PATH = STATIC_FOLDER / 'scan.log'
 
-SETTINGS_FILE_PATH = ROOT_PATH / 'settings.json'
-SETTINGS_SCHEMA_PATH = ROOT_PATH / 'settings.schema.json'
+CAMERAS_DATA_PATH = ROOT_PATH / 'cameras.json'
+CAMERAS_SCHEMA_PATH = ROOT_PATH / 'cameras.schema.json'
 
 DEFAULT_LENSFUN_XML_PATH = ROOT_PATH / 'lensfun.xml'
 DUMMY_CAPTURES_PATH = ROOT_PATH.parent / 'eggs' / 'dummy_captures'

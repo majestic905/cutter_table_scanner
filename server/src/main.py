@@ -1,19 +1,15 @@
 import traceback
+import json
 from http import HTTPStatus as status
 from flask import request
 
 from app import app
 from app_logger import read_log, clear_log
 from lensfun import read_lensfun_xml, save_lensfun_xml, validate_xml
-from settings import get_settings, save_settings, validate_settings
+from cameras_data import get_cameras_data, save_cameras_data, validate_cameras_data
 from scan import Scan
 from scan_info import read_scan_info, write_scan_info
 
-
-
-@app.errorhandler(404)
-def resource_not_found(e):
-    return {"message": str(e)}, 404
 
 
 @app.route('/api/scan', methods=['GET'])
@@ -52,20 +48,31 @@ def build_scan():
     return {'ok': True}, status.OK  # front-end checks for non-empty response
 
 
-
-@app.route('/api/settings', methods=['GET'])
-def send_settings():
-    return get_settings()
+##############
 
 
-@app.route('/api/settings', methods=['POST'])
-def update_settings():
-    error_msg = validate_settings(request.json)
+@app.route('/api/cameras', methods=['GET'])
+def send_cameras_data():
+    cameras = {position.name: json.dumps(data, indent=4) for position, data in get_cameras_data().items()}
+    return cameras
+
+
+@app.route('/api/cameras', methods=['POST'])
+def update_cameras_data():
+    try:
+        data = {position: json.loads(data) for position, data in request.json.items()}
+    except json.JSONDecodeError as error:
+        return {"message": str(error)}, status.BAD_REQUEST
+
+    error_msg = validate_cameras_data(data)
     if error_msg is not None:
-        return {'message': error_msg}, status.BAD_REQUEST
+        return {"message": error_msg}, status.BAD_REQUEST
 
-    save_settings(request.json)
+    save_cameras_data(data)
     return '', status.NO_CONTENT
+
+
+##############
 
 
 @app.route('/api/lensfun', methods=['GET'])
@@ -76,16 +83,23 @@ def send_lensfun_xml():
 @app.route('/api/lensfun', methods=['POST'])
 def update_lensfun_xml():
     text = request.data.decode("utf-8")
-    error = validate_xml(text)
+    error_msg = validate_xml(text)
 
-    if error is not None:
-        line, column = error
-        return {'message': f'XML parsing error, line {line}, column {column}'}, status.BAD_REQUEST
+    if error_msg is not None:
+        return {'message': error_msg}, status.BAD_REQUEST
 
     save_lensfun_xml(text)
     return '', status.NO_CONTENT
 
 
+##############
+
+
 @app.route('/', methods=['GET'])
 def index():
     return app.send_static_file('build/index.html')
+
+
+@app.errorhandler(404)
+def resource_not_found(e):
+    return {"message": str(e)}, 404
