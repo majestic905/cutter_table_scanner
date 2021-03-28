@@ -1,9 +1,9 @@
 import gphoto2 as gp
 
-from app import app
-from app_logger import logger
-from cameras_data import get_cameras_data
-from camera import DummyCamera, RealCamera, CameraPosition
+from server.src.app import app
+from server.src.app.logger import logger, log_timing
+from .data import get_cameras_data
+from .camera import Camera, DummyCamera, RealCamera, CameraPosition
 
 
 def _get_gp_cameras_by_serial():
@@ -46,6 +46,7 @@ def _get_cameras_development():
     return {position: DummyCamera(camera_data, position) for position, camera_data in cameras_data.items()}
 
 
+@log_timing
 def get_cameras():
     if app.env == "development":
         return _get_cameras_development()

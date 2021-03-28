@@ -2,17 +2,11 @@ import shutil
 import lensfunpy
 import gphoto2 as gp
 from pathlib import Path
-from enum import Enum
 from timeit import default_timer as timer
-from app_logger import logger
-from paths import DUMMY_CAPTURES_PATH
+from server.src.app.logger import logger
+from server.src.app.paths import DUMMY_CAPTURES_PATH
+from .position import CameraPosition
 
-
-class CameraPosition(Enum):
-    LU = 'left_upper'
-    RU = 'right_upper'
-    RL = 'right_lower'
-    LL = 'left_lower'
 
 
 class Camera:

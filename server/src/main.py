@@ -4,11 +4,11 @@ from http import HTTPStatus as status
 from flask import request
 
 from app import app
-from app_logger import read_log, clear_log
-from lensfun import read_lensfun_xml, save_lensfun_xml, validate_xml
-from cameras_data import get_cameras_data, save_cameras_data, validate_cameras_data
+from app.logger import read_log, clear_log
+from processing.lensfun import read_lensfun_xml, save_lensfun_xml, validate_xml
+from camera.data import get_cameras_data, save_cameras_data, validate_cameras_data
 from scan import Scan
-from scan_info import read_scan_info, write_scan_info
+from scan.info import read_scan_info, write_scan_info
 
 
 

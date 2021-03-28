@@ -1,7 +1,5 @@
-import os
-import shutil
 from pathlib import Path
-from app import app
+from . import app
 
 
 ROOT_PATH = Path(app.root_path)
@@ -16,7 +14,6 @@ CAMERAS_SCHEMA_PATH = ROOT_PATH / 'cameras.schema.json'
 
 DEFAULT_LENSFUN_XML_PATH = ROOT_PATH / 'lensfun.xml'
 DUMMY_CAPTURES_PATH = ROOT_PATH.parent / 'eggs' / 'dummy_captures'
-
 
 if not SCAN_IMAGES_PATH.exists():
     SCAN_IMAGES_PATH.mkdir()

@@ -3,8 +3,8 @@ import lensfunpy
 from xml.etree.ElementTree import XML, ParseError
 from shutil import copy
 from pathlib import Path
-from paths import DEFAULT_LENSFUN_XML_PATH
-from camera import Camera
+from server.src.app.paths import DEFAULT_LENSFUN_XML_PATH
+from server.src.camera import Camera
 
 
 LENSFUN_XML_FILE_NAME = 'cutter_table_scanner.xml'

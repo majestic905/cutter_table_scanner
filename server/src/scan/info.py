@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from paths import SCAN_INFO_PATH
+from server.src.app.paths import SCAN_INFO_PATH
 
 
 def read_scan_info():
