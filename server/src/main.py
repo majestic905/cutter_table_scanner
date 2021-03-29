@@ -37,7 +37,7 @@ def send_scan():
 def build_scan():
     try:
         acquire_busy_state()
-        scan_type = request.args.get('type')
+        scan_type = request.args.get('scan_type')
         use_lensfun = request.args.get('use_lensfun')
         scan_class = Scan.get_class(scan_type)
         scan = scan_class()

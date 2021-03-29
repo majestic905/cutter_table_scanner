@@ -20,13 +20,11 @@ function App() {
             alert(`Ошибка при загрузке скана: ${error}`);
     }, [response, error]);
 
-    if (isLoading)
-        return <div className="loading mt-2"/>;
-
     return (
         <main>
             <Header getScan={getScan} />
 
+            {isLoading && <div className="loading mt-2"/>}
             {scan?.scanType === "snapshot" && <Snapshot scan={scan}/>}
             {scan?.scanType === "calibration" && <Calibration scan={scan}/>}
         </main>
