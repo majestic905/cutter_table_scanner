@@ -1,126 +1,54 @@
 {
-    "LU": {
-        "maker": "Nikon",
-        "model": "Coolpix S9400",
-        "projected_image_size": [
-            1500,
-            1350
-        ],
-        "projection_points": {
-            "bottom_left": [
-                835,
-                3149
-            ],
-            "bottom_right": [
-                4150,
-                3160
-            ],
-            "top_left": [
-                873,
-                189
-            ],
-            "top_right": [
-                4135,
-                200
-            ]
-        },
-        "serial_number": "000041116619",
-        "table_section_size": [
-            1500,
-            1500
-        ]
-    },
     "LL": {
         "maker": "Nikon",
         "model": "Coolpix S9400",
-        "projected_image_size": [
-            1500,
-            1350
-        ],
+        "projected_image_size": [1336,1222],
         "projection_points": {
-            "bottom_left": [
-                952,
-                3563
-            ],
-            "bottom_right": [
-                4266,
-                3529
-            ],
-            "top_left": [
-                903,
-                590
-            ],
-            "top_right": [
-                4216,
-                527
-            ]
+            "bottom_left": [813,3417],
+            "bottom_right": [3756,3388],
+            "top_left": [768,727],
+            "top_right": [3711,674]
         },
         "serial_number": "000041130921",
-        "table_section_size": [
-            1500,
-            1500
-        ]
+        "table_section_size": [1336,1222]
+    },
+    "LU": {
+        "maker": "Nikon",
+        "model": "Coolpix S9400",
+        "projected_image_size": [1336,1377],
+        "projection_points": {
+            "bottom_left": [708,3129],
+            "bottom_right": [3628,3169],
+            "top_left": [728,98],
+            "top_right": [3676,135]
+        },
+        "serial_number": "000041116619",
+        "table_section_size": [1500,1500]
     },
     "RL": {
         "maker": "Nikon",
         "model": "Coolpix S9400",
-        "projected_image_size": [
-            1500,
-            1350
-        ],
+        "projected_image_size": [1036,1222],
         "projection_points": {
-            "bottom_left": [
-                882,
-                3665
-            ],
-            "bottom_right": [
-                4295,
-                3640
-            ],
-            "top_left": [
-                866,
-                604
-            ],
-            "top_right": [
-                4246,
-                563
-            ]
+            "bottom_left": [362,3481],
+            "bottom_right": [2709,3489],
+            "top_left": [383,710],
+            "top_right": [2711,709]
         },
         "serial_number": "000041110299",
-        "table_section_size": [
-            1500,
-            1500
-        ]
+        "table_section_size": [1500,1500]
     },
     "RU": {
         "maker": "Nikon",
         "model": "Coolpix S9400",
-        "projected_image_size": [
-            1500,
-            1350
-        ],
+        "projected_image_size": [1036,1377],
         "projection_points": {
-            "bottom_left": [
-                809,
-                3138
-            ],
-            "bottom_right": [
-                4188,
-                3121
-            ],
-            "top_left": [
-                800,
-                92
-            ],
-            "top_right": [
-                4173,
-                78
-            ]
+            "bottom_left": [323, 3288],
+            "bottom_right": [2652, 3265],
+            "top_left": [277,179],
+            "top_right": [2610,163]
         },
         "serial_number": "000043107073",
-        "table_section_size": [
-            1500,
-            1500
-        ]
+        "table_section_size": [1500,1500]
     }
 }
