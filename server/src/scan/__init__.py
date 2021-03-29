@@ -19,9 +19,9 @@ class Scan:
 
     @staticmethod
     def get_class(scan_type: str):
-        if scan_type == 'snapshot':
+        if scan_type == SnapshotScan.type:
             return SnapshotScan
-        elif scan_type == 'calibration':
+        elif scan_type == CalibrationScan.type:
             return CalibrationScan
         else:
             raise ValueError('Wrong `scan_type` value')
@@ -30,11 +30,13 @@ class Scan:
         rmtree(SCAN_IMAGES_PATH)
         SCAN_IMAGES_PATH.mkdir()
         (SCAN_IMAGES_PATH / 'thumbs').mkdir()
-        write_scan_info('snapshot')
+        write_scan_info(self.type)
         clear_log()
 
 
 class SnapshotScan(Scan):
+    type = "snapshot"
+
     def __init__(self):
         self.original = Grid('original')
         self.undistorted = Grid('undistorted')
@@ -92,6 +94,8 @@ class SnapshotScan(Scan):
 
 
 class CalibrationScan(Scan):
+    type = "calibration"
+
     def __init__(self):
         self.original = Grid('original')
         self.undistorted = Grid('undistorted')

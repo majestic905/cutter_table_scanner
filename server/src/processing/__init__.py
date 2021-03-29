@@ -26,6 +26,7 @@ def capture_photos(paths: PathsType, cameras: CamerasType):
         for position in CameraPosition
     }
 
+
     for position in CameraPosition:
         threads[position].start()
 
