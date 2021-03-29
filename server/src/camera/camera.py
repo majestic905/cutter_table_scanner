@@ -2,7 +2,6 @@ import shutil
 import lensfunpy
 import gphoto2 as gp
 from pathlib import Path
-from server.src.app.logger import log_timing
 from server.src.app.paths import DUMMY_CAPTURES_PATH
 from .position import CameraPosition
 
@@ -32,7 +31,6 @@ class RealCamera(Camera):
         super().__init__(camera_data)
         self._gp_camera = gp_camera
 
-    @log_timing
     def capture_to_path(self, dst_path: Path):
         camera, serial_number = self._gp_camera, self.serial_number
 

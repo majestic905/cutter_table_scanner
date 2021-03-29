@@ -15,6 +15,7 @@ PathsType = Dict[CameraPosition, Path]
 CamerasType = Dict[CameraPosition, Camera]
 
 
+@log_timing
 def _capture_photo(path: Path, camera: Camera):
     camera.capture_to_path(path)
 
@@ -25,7 +26,6 @@ def capture_photos(paths: PathsType, cameras: CamerasType):
         position: Thread(target=_capture_photo, args=(paths[position], cameras[position]))
         for position in CameraPosition
     }
-
 
     for position in CameraPosition:
         threads[position].start()
