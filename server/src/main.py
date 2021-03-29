@@ -4,7 +4,7 @@ from http import HTTPStatus as status
 from flask import request
 
 from app import app
-from app.logger import read_log, clear_log
+from app.logger import read_log
 from app.busy import acquire_busy_state, release_busy_state, check_is_busy
 from processing.lensfun import read_lensfun_xml, save_lensfun_xml, validate_xml
 from camera.data import get_cameras_data, save_cameras_data, validate_cameras_data
@@ -37,13 +37,11 @@ def send_scan():
 def build_scan():
     try:
         acquire_busy_state()
-
         scan_type = request.args.get('type')
+        use_lensfun = request.args.get('use_lensfun')
         scan_class = Scan.get_class(scan_type)
-        write_scan_info(scan_type)
-        clear_log()
         scan = scan_class()
-        scan.build()
+        scan.build(use_lensfun=bool(use_lensfun))
     except Exception as error:
         traceback.print_exc()
         return {'message': str(error)}, status.INTERNAL_SERVER_ERROR

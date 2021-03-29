@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import cv2
 import exif
@@ -48,7 +49,7 @@ def disorient_images(paths: PathsType):
 
 
 @log_timing
-def _undistort_image(image: np.ndarray, camera: Camera):
+def _undistort_image_lensfun(image: np.ndarray, camera: Camera):
     if not camera.lf_cam or not camera.lf_lens:
         return image
 
@@ -58,8 +59,19 @@ def _undistort_image(image: np.ndarray, camera: Camera):
 
 
 @log_timing
-def undistort(images: ImagesType, cameras: CamerasType):
-    return {position: _undistort_image(images[position], cameras[position]) for position in cameras}
+def undistort_lensfun(images: ImagesType, cameras: CamerasType):
+    return {position: _undistort_image_lensfun(images[position], cameras[position]) for position in cameras}
+
+
+@log_timing
+def _undistort_image_custom(path: Path, camera: Camera):
+    os.system(f'da -i {str(path)} -o {str(path)}')
+
+
+@log_timing
+def undistort_custom(paths: PathsType, cameras: CamerasType):
+    for position in CameraPosition:
+        _undistort_image_custom(paths[position], cameras[position])
 
 
 def _draw_polygon(image: np.ndarray, camera: Camera):

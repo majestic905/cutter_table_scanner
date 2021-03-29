@@ -115,6 +115,10 @@ class Grid:
         for position in CameraPosition:
             self._items[position].persist_to(paths[position])
 
+    def persist_images_to(self, paths: PathsType):
+        for position in CameraPosition:
+            self._items[position].persist_image_to(paths[position])
+
     def persist_thumbnails_to(self, paths: PathsType):
         for position in CameraPosition:
             self._items[position].persist_thumbnail_to(paths[position])

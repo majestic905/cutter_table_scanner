@@ -40,6 +40,3 @@ def paths_for(grid: Grid, only: str = None) -> Dict[CameraPosition, PathOrPaths]
 def urls_for(grid: Grid, only: str = None) -> Dict[CameraPosition, StrOrStrs]:
     return {position.name: url_for(grid.items[position], only) for position in CameraPosition}
 
-
-def create_thumbs_folder():
-    return (SCAN_IMAGES_PATH / 'thumbs').mkdir(exist_ok=True)
