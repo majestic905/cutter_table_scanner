@@ -79,7 +79,7 @@ def _draw_polygon(image: np.ndarray, camera: Camera):
     points = camera.projection_points
     points = [points['top_left'], points['top_right'], points['bottom_right'], points['bottom_left']]
     points = np.array(points, dtype=np.int32).reshape((-1, 1, 2))
-    return cv2.polylines(image, [points], True, (0, 0, 255), thickness=8)
+    return cv2.polylines(image, [points], True, (0, 0, 255), thickness=1)
 
 
 @log_timing
