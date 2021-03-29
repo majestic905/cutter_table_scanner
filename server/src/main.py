@@ -104,7 +104,7 @@ def update_lensfun_xml():
 
 @app.route('/', methods=['GET'])
 def index():
-    return app.send_static_file('build/index.html')
+    return app.send_static_file('front/index.html')
 
 
 @app.errorhandler(404)

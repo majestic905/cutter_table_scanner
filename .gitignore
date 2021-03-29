@@ -1,7 +1,7 @@
 /.idea
 .eslintcache
 server/static/*
-!server/static/build/
+!server/static/front/
 server/data
 
 # Byte-compiled / optimized / DLL files
