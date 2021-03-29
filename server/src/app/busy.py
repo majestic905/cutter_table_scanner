@@ -12,7 +12,8 @@ def acquire_busy_state():
 
 
 def release_busy_state():
-    BUSY_FILE_PATH.unlink(missing_ok=True)
+    if BUSY_FILE_PATH.exists():
+        BUSY_FILE_PATH.unlink()
 
 
 def check_is_busy(f):
