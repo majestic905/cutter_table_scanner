@@ -5,6 +5,7 @@ from flask import request
 
 from app import app
 from app.logger import read_log, clear_log
+from app.busy import acquire_busy_state, release_busy_state, check_is_busy
 from processing.lensfun import read_lensfun_xml, save_lensfun_xml, validate_xml
 from camera.data import get_cameras_data, save_cameras_data, validate_cameras_data
 from scan import Scan
@@ -32,10 +33,12 @@ def send_scan():
 
 
 @app.route('/api/scan', methods=['POST'])
+@check_is_busy
 def build_scan():
-    scan_type = request.args.get('type')
-
     try:
+        acquire_busy_state()
+
+        scan_type = request.args.get('type')
         scan_class = Scan.get_class(scan_type)
         write_scan_info(scan_type)
         clear_log()
@@ -44,6 +47,8 @@ def build_scan():
     except Exception as error:
         traceback.print_exc()
         return {'message': str(error)}, status.INTERNAL_SERVER_ERROR
+    finally:
+        release_busy_state()
 
     return {'ok': True}, status.OK  # front-end checks for non-empty response
 
@@ -58,6 +63,7 @@ def send_cameras_data():
 
 
 @app.route('/api/cameras', methods=['POST'])
+@check_is_busy
 def update_cameras_data():
     try:
         data = {position: json.loads(data) for position, data in request.json.items()}
@@ -81,6 +87,7 @@ def send_lensfun_xml():
 
 
 @app.route('/api/lensfun', methods=['POST'])
+@check_is_busy
 def update_lensfun_xml():
     text = request.data.decode("utf-8")
     error_msg = validate_xml(text)
