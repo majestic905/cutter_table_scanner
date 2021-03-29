@@ -52,9 +52,12 @@ class SnapshotScan(Scan):
             original_thumb_paths = paths_for(self.original, only='thumb')
             self.original.persist_thumbnails_to(original_thumb_paths)
 
-            undistorted_images = undistort(self.original.images, cameras)
+            undistorted_images_paths = paths_for(self.undistorted, only='image')
+            print(self.original.images)
+            undistort(undistorted_images_paths, self.original.images, cameras)
+            self.undistorted.read_from(undistorted_images_paths)
 
-            self.projected.images = project(undistorted_images, cameras)
+            self.projected.images = project(self.undistorted.images, cameras)
             projected_paths = paths_for(self.projected)
             self.projected.persist_to(projected_paths)
 
@@ -62,7 +65,7 @@ class SnapshotScan(Scan):
             result_path = path_for(self.result)
             self.result.persist_to(result_path)
 
-            self.undistorted.images = draw_polygons(undistorted_images, cameras)
+            self.undistorted.images = draw_polygons(self.undistorted.images, cameras)
             undistorted_paths = paths_for(self.undistorted)
             self.undistorted.persist_to(undistorted_paths)
         except Exception:
@@ -100,9 +103,12 @@ class CalibrationScan(Scan):
             original_thumb_paths = paths_for(self.original, only='thumb')
             self.original.persist_thumbnails_to(original_thumb_paths)
 
-            self.undistorted.images = undistort(self.original.images, cameras)
-            undistorted_paths = paths_for(self.undistorted)
-            self.undistorted.persist_to(undistorted_paths)
+            undistorted_images_paths = paths_for(self.undistorted, only='image')
+            undistort(undistorted_images_paths, self.original.images, cameras)
+
+            self.undistorted.read_from(undistorted_images_paths)
+            undistorted_thumb_paths = paths_for(self.undistorted, only='thumb')
+            self.undistorted.persist_thumbnails_to(undistorted_thumb_paths)
         except Exception:
             logger.exception("Exception was raised inside CalibrationScan.build")
             raise

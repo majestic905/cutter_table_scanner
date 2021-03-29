@@ -3,6 +3,7 @@ import cv2
 import exif
 from pathlib import Path
 from threading import Thread
+from multiprocessing import Process
 from typing import Dict
 from server.src.app.logger import log_timing
 from server.src.camera import Camera, CameraPosition
@@ -48,18 +49,28 @@ def disorient_images(paths: PathsType):
 
 
 @log_timing
-def _undistort_image(image: np.ndarray, camera: Camera):
+def _undistort_image(path: Path, image: np.ndarray, camera: Camera):
     if not camera.lf_cam or not camera.lf_lens:
         return image
 
     height, width = image.shape[0], image.shape[1]
     undist_coords = get_undist_coords(camera, (width, height))
-    return cv2.remap(image, undist_coords, None, cv2.INTER_LANCZOS4)
+    result = cv2.remap(image, undist_coords, None, cv2.INTER_LANCZOS4)
+    cv2.imwrite(str(path), result)
 
 
 @log_timing
-def undistort(images: ImagesType, cameras: CamerasType):
-    return {position: _undistort_image(images[position], cameras[position]) for position in cameras}
+def undistort(paths: PathsType, images: ImagesType, cameras: CamerasType):
+    processes = {
+        position: Process(target=_undistort_image, args=(paths[position], images[position], cameras[position]))
+        for position in CameraPosition
+    }
+
+    for position in CameraPosition:
+        processes[position].start()
+
+    for position in CameraPosition:
+        processes[position].join()
 
 
 def _draw_polygon(image: np.ndarray, camera: Camera):
