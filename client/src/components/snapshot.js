@@ -4,12 +4,20 @@ import {Tabs, Tab} from "./shared/tabs";
 import {ImagesGrid, DownloadableImage} from "./shared/images";
 
 
+function transformUrls({thumb, image}, createdAt) {
+    return {src: `${thumb}?${createdAt}`, alt: image, url: image};
+}
+
+
 const ResultImage = ({url, createdAt}) => {
+    const src = `${url}?${createdAt}`;
+
     createdAt = new Date(createdAt).toISOString().slice(0, 19).replace(/[-:T]/g, '_');
+    const download = `result_${createdAt}.jpg`
 
     return (
         <div className="container grid-lg">
-            <DownloadableImage src={url} alt={url} url={url} download={`result_${createdAt}.jpg`} id="result"/>
+            <DownloadableImage src={src} alt={url} url={url} download={download} id="result"/>
         </div>
     )
 }
@@ -20,12 +28,9 @@ const Snapshot = ({scan}) => {
     const selectTab = useCallback(ev => setActiveTab(ev.currentTarget.dataset.tabName), [setActiveTab]);
 
     const images = {original: {}, undistorted: {}, projected: {}, result: scan.images.result};
-    for (const name of ['original', 'undistorted', 'projected']) {
-        for (const position of ['LU', 'LL', 'RU', 'RL']) {
-            const {image, thumb} = scan.images[name][position];
-            images[name][position] = {src: `${thumb}?${scan.createdAt}`, alt: image, url: image};
-        }
-    }
+    for (const name of ['original', 'undistorted', 'projected'])
+        for (const position of ['LU', 'LL', 'RU', 'RL'])
+            images[name][position] = transformUrls(scan.images[name][position], scan.createdAt);
 
     return (
         <div>
