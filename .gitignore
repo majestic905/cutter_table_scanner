@@ -2,7 +2,7 @@
 .eslintcache
 server/static/*
 !server/static/front/
-server/data
+server/cameras.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

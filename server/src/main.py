@@ -38,10 +38,10 @@ def build_scan():
     try:
         acquire_busy_state()
         scan_type = request.args.get('scan_type')
-        use_lensfun = request.args.get('use_lensfun')
+        use_lensfun = request.args.get('use_lensfun') == "true"
         scan_class = Scan.get_class(scan_type)
         scan = scan_class()
-        scan.build(use_lensfun=bool(use_lensfun))
+        scan.build(use_lensfun=use_lensfun)
     except Exception as error:
         traceback.print_exc()
         return {'message': str(error)}, status.INTERNAL_SERVER_ERROR
