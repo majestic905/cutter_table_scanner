@@ -11,7 +11,6 @@ class Camera:
     def __init__(self, data: dict):
         self.projected_image_size = data['projected_image_size']
         self.projection_points = data['projection_points']
-        print(self.projection_points, self.projected_image_size)
 
         self.serial_number = data.get('serial_number')
         self.maker = data['maker']
