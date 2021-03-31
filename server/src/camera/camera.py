@@ -1,6 +1,8 @@
 import shutil
 import lensfunpy
 import gphoto2 as gp
+import cv2
+from datetime import datetime
 from pathlib import Path
 from server.src.app.paths import DUMMY_CAPTURES_PATH
 from .position import CameraPosition
@@ -53,7 +55,13 @@ class DummyCamera(Camera):
 
     def capture_to_path(self, dst_path: Path):
         src_path = DUMMY_CAPTURES_PATH / f'{self._position.value}.jpg'
-        shutil.copy(src_path, dst_path)
+        image = cv2.imread(str(src_path))
+
+        bottom_left = (600, 2435)
+        text = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        cv2.putText(image, text, bottom_left, cv2.FONT_HERSHEY_DUPLEX, 10, (0, 0, 255), 15, cv2.LINE_AA)
+
+        cv2.imwrite(str(dst_path), image)
 
     def __repr__(self):
         return f'DummyCamera({self._position})'
