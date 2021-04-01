@@ -1,5 +1,3 @@
-import shutil
-import lensfunpy
 import gphoto2 as gp
 import cv2
 from datetime import datetime
@@ -8,19 +6,9 @@ from server.src.app.paths import DUMMY_CAPTURES_PATH
 from .position import CameraPosition
 
 
-
 class Camera:
-    def __init__(self, data: dict):
-        self.projected_image_size = data['projected_image_size']
-        self.projection_points = data['projection_points']
-
-        self.serial_number = data.get('serial_number')
-        self.maker = data['maker']
-        self.model = data['model']
-
-        db = lensfunpy.Database()
-        self.lf_cam = db.find_cameras(self.maker, self.model)[0]
-        self.lf_lens = db.find_lenses(self.lf_cam)[0]
+    def __init__(self, camera_data: dict):
+        self.mapping = camera_data['mapping']
 
     def capture_to_path(self, path: Path):
         raise NotImplementedError
@@ -31,6 +19,7 @@ class RealCamera(Camera):
 
     def __init__(self, camera_data: dict, gp_camera: gp.Camera):
         super().__init__(camera_data)
+        self.serial_number = camera_data['serial_number']
         self._gp_camera = gp_camera
 
     def capture_to_path(self, dst_path: Path):
@@ -40,10 +29,6 @@ class RealCamera(Camera):
         camera_file = camera.file_get(file_path.folder, file_path.name, gp.GP_FILE_TYPE_NORMAL)
         camera_file.save(str(dst_path))
         camera.file_delete(file_path.folder, file_path.name)
-
-    def __repr__(self):
-        args = {'maker': self.maker, 'model': self.model, 'serial_number': self.serial_number}
-        return f'RealCamera({args})'
 
 
 class DummyCamera(Camera):
@@ -62,6 +47,3 @@ class DummyCamera(Camera):
         cv2.putText(image, text, bottom_left, cv2.FONT_HERSHEY_DUPLEX, 10, (0, 0, 255), 15, cv2.LINE_AA)
 
         cv2.imwrite(str(dst_path), image)
-
-    def __repr__(self):
-        return f'DummyCamera({self._position})'

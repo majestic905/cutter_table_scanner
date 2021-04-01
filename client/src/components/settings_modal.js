@@ -3,30 +3,6 @@ import useFetch from "../hooks/useFetch";
 import cx from "classnames";
 
 
-const CamerasColumns = ({cameras}) => {
-    return (
-        <div id="cameras" className="columns">
-            <div className="column col-6">
-                <label className="form-label text-bold" htmlFor="camera-LU">LU: Left Upper</label>
-                <textarea id="camera-LU" name="LU" className="form-input" defaultValue={cameras['LU']}/>
-            </div>
-            <div className="column col-6">
-                <label className="form-label text-bold" htmlFor="camera-RU">RU: Right Upper</label>
-                <textarea id="camera-RU" name="RU" className="form-input" defaultValue={cameras['RU']}/>
-            </div>
-            <div className="column col-6">
-                <label className="form-label text-bold" htmlFor="camera-LL">LL: Left Lower</label>
-                <textarea id="camera-LL" name="LL" className="form-input" defaultValue={cameras['LL']}/>
-            </div>
-            <div className="column col-6">
-                <label className="form-label text-bold" htmlFor="camera-RL">RL: Right Lower</label>
-                <textarea id="camera-RL" name="RL" className="form-input" defaultValue={cameras['RL']}/>
-            </div>
-        </div>
-    )
-}
-
-
 const SettingsModal = ({closeModal}) => {
     const [data, setData] = useState();
 
@@ -36,7 +12,7 @@ const SettingsModal = ({closeModal}) => {
 
     useEffect(() => {
         if (response !== undefined && !data) { // GET
-            setData(response);
+            setData(JSON.stringify(response, null, 2));
         } else if (response !== undefined && data) // POST
             closeModal();
     }, [response, setData, closeModal]);
@@ -44,15 +20,10 @@ const SettingsModal = ({closeModal}) => {
     const doSubmit = useCallback(ev => {
         ev.preventDefault();
 
-        const body = {};
-        for (const position of ['LU', 'LL', 'RL', 'RU'])
-            body[position] = ev.target.elements[position].value;
-
-
         doFetch({
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
+            body: ev.target.elements.settings.value
         });
     }, [doFetch]);
 
@@ -80,7 +51,7 @@ const SettingsModal = ({closeModal}) => {
                      <div className="toast toast-error">{error}</div>
                 </div>}
                 <div className="modal-body pt-0">
-                    {data && <CamerasColumns cameras={data}/>}
+                    {data && <textarea id="settings" name="settings" className="form-input" defaultValue={data}/>}
                     {isLoading && <div className="loading loading-lg"/>}
                 </div>
             </div>

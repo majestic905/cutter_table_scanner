@@ -1,5 +1,6 @@
 /.idea
 .eslintcache
+/scipy_undistort
 server/static/*
 !server/static/front/
 server/cameras.json

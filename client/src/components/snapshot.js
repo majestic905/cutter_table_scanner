@@ -27,8 +27,8 @@ const Snapshot = ({scan}) => {
     const [activeTab, setActiveTab] = useState('result');
     const selectTab = useCallback(ev => setActiveTab(ev.currentTarget.dataset.tabName), [setActiveTab]);
 
-    const images = {original: {}, undistorted: {}, projected: {}, result: scan.images.result};
-    for (const name of ['original', 'undistorted', 'projected'])
+    const images = {original: {}, projected: {}, result: scan.images.result};
+    for (const name of ['original', 'projected'])
         for (const position of ['LU', 'LL', 'RU', 'RL'])
             images[name][position] = transformUrls(scan.images[name][position], scan.createdAt);
 
@@ -36,14 +36,12 @@ const Snapshot = ({scan}) => {
         <div>
             <Tabs>
                 <Tab onClick={selectTab} name="original" text="Original" isActive={activeTab === "original"}/>
-                <Tab onClick={selectTab} name="undistorted" text="Undistorted" isActive={activeTab === "undistorted"}/>
                 <Tab onClick={selectTab} name="projected" text="Projected" isActive={activeTab === "projected"}/>
                 <Tab onClick={selectTab} name="result" text="Result" isActive={activeTab === "result"}/>
                 <Tab onClick={selectTab} name="log" text="Log" isActive={activeTab === "log"}/>
             </Tabs>
 
             {activeTab === "original" && <ImagesGrid images={images.original} isClickable/>}
-            {activeTab === "undistorted" && <ImagesGrid images={images.undistorted} isClickable/>}
             {activeTab === "projected" && <ImagesGrid images={images.projected} isClickable/>}
             {activeTab === "result" && <ResultImage url={images.result.image} createdAt={scan.createdAt}/>}
             {activeTab === "log" && <Log text={scan.log}/>}

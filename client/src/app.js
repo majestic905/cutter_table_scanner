@@ -2,7 +2,7 @@ import {useState, useEffect} from "react";
 import useFetch from "./hooks/useFetch";
 import Header from "./components/header";
 import Snapshot from "./components/snapshot";
-import Calibration from "./components/calibration";
+import Capture from "./components/capture";
 import './app.scss';
 
 
@@ -26,7 +26,7 @@ function App() {
 
             {isLoading && <div className="loading mt-2"/>}
             {scan?.scanType === "snapshot" && <Snapshot scan={scan}/>}
-            {scan?.scanType === "calibration" && <Calibration scan={scan}/>}
+            {scan?.scanType === "capture" && <Capture scan={scan}/>}
         </main>
     );
 }

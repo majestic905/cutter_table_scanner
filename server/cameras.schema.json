@@ -1,6 +1,6 @@
 {
   "definitions": {
-    "point_or_size":  {
+    "point":  {
       "type": "array",
       "items": [
         { "type": "integer", "minimum": 0 },
@@ -10,26 +10,22 @@
       "maxItems": 2
     },
 
-    "projection_points": {
-      "type": "object",
-      "required": ["bottom_left", "bottom_right", "top_right", "top_left"],
-      "properties": {
-        "bottom_left": { "$ref": "#/definitions/point_or_size" },
-        "bottom_right": { "$ref": "#/definitions/point_or_size" },
-        "top_right": { "$ref": "#/definitions/point_or_size" },
-        "top_left": { "$ref": "#/definitions/point_or_size" }
-      }
-    },
-
     "camera": {
       "type": "object",
-      "required": ["projection_points", "projected_image_size", "table_section_size", "maker", "model", "serial_number"],
+      "required": ["interpolation_points", "serial_number"],
       "properties": {
-        "projection_points": { "$ref": "#/definitions/projection_points" },
-        "projected_image_size": { "$ref": "#/definitions/point_or_size" },
-        "table_section_size": { "$ref": "#/definitions/point_or_size" },
-        "maker": { "type": "string" },
-        "model": { "type": "string" },
+        "projection_points": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["src", "dst"],
+            "properties": {
+              "src": { "$ref": "#/definitions/point" },
+              "dst": { "$ref": "#/definitions/point" }
+            }
+          },
+          "minItems": 4
+        },
         "serial_number": { "type": "string" }
       }
     }
