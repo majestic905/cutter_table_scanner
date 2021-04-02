@@ -39,7 +39,7 @@ class DummyCamera(Camera):
         self._position = position
 
     def capture_to_path(self, dst_path: Path):
-        src_path = DUMMY_CAPTURES_PATH / f'{self._position.value}.jpg'
+        src_path = DUMMY_CAPTURES_PATH / f'{self._position.name}.jpg'
         image = cv2.imread(str(src_path))
 
         bottom_left = (600, 2435)

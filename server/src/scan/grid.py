@@ -71,11 +71,11 @@ class GridItem(ThumbedImage):
 
     @property
     def filename(self) -> str:
-        return f'{self._position.value}_{self._name}.jpg'
+        return f'{self._position.name}_{self._name}.jpg'
 
     @property
     def thumb_filename(self) -> str:
-        return f'thumb_{self._position.value}_{self._name}.jpg'
+        return f'thumb_{self._position.name}_{self._name}.jpg'
 
 
 class Grid:

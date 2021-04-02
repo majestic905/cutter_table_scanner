@@ -1,9 +1,9 @@
 /.idea
 .eslintcache
-/scipy_undistort
 server/static/*
 !server/static/front/
 server/cameras.json
+scripts/images/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
