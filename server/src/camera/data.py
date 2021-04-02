@@ -14,7 +14,7 @@ def compute_mapping_matrix(points):
     destination = np.array([point['dst'] for point in points])
     source = np.array([point['src'] for point in points])
 
-    bottom_right_x, bottom_right_y = source[-1]  # last points MUST be right lower corner of image
+    bottom_right_x, bottom_right_y = destination[-1]  # last points MUST be right lower corner of image
     img_height, img_width = bottom_right_x + 1, bottom_right_y + 1
 
     mgrid_x = slice(0, img_height - 1, complex(0, img_height))
