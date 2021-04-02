@@ -79,7 +79,7 @@ def with_circles_drawn(image: np.ndarray, dots: list):
     text_thickness = 2
 
     for i, dot in enumerate(dots):
-        center_x, center_y = round(dot[0]), round(dot[1])
+        center_x, center_y = dot[0], dot[1]
         cv2.circle(image, (center_x, center_y), circle_radius, circle_color, circle_thickness)
 
         text = str(i)
@@ -116,7 +116,7 @@ def save_to_json(dots: list, position: str):
 
 def find_contour_centers(contours: list):
     moments = [cv2.moments(contour) for contour in contours]
-    return [(M["m10"] / M["m00"], M["m01"] / M["m00"]) for M in moments]
+    return [(round(M["m10"] / M["m00"]), round(M["m01"] / M["m00"])) for M in moments]
 
 
 def detect_dots(position: str):
