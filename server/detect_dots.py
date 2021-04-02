@@ -3,7 +3,18 @@ import numpy as np
 import argparse
 from operator import itemgetter
 
-N_ROWS, N_COLS = 29, 33
+N_ROWS, N_COLS, PX_BETWEEN = 29, 33, 100
+
+
+def with_contours_drawn(image: np.ndarray, contours: list):
+    image = image.copy()
+
+    contour_idx = -1  # if it is negative, all the contours are drawn.
+    color = (255, 0, 0)
+    thickness = 6
+    cv2.drawContours(image, contours, contour_idx, color, thickness)
+
+    return image
 
 
 def with_circles_drawn(image: np.ndarray, dots: list):
@@ -18,43 +29,42 @@ def with_circles_drawn(image: np.ndarray, dots: list):
     text_thickness = 2
 
     for i, dot in enumerate(dots):
-        circle_center = (dot[0], dot[1])
-        cv2.circle(image, circle_center, circle_radius, circle_color, circle_thickness)
+        center_x, center_y = round(dot[0]), round(dot[1])
+        cv2.circle(image, (center_x, center_y), circle_radius, circle_color, circle_thickness)
 
         text = str(i)
-        text_bottom_left = (dot[0] - 20, dot[1] - 20)
+        text_bottom_left = (center_x - 20, center_y - 20)
         cv2.putText(image, text, text_bottom_left, cv2.FONT_HERSHEY_SIMPLEX, text_font_scale, text_color, text_thickness)
 
+    return image
 
-def get_dots_matrix(dots: list):
+
+def sort_dots(dots: list):
     dots = sorted(dots, key=itemgetter(1))
     dots = [dots[i:i + N_COLS] for i in range(0, len(dots), N_COLS)]
-    return [sorted(row) for row in dots]
+    return [dot for row in dots for dot in sorted(row)]
 
 
 def write_dots_json(filename: str, dots: list):
+    def get_line(dot, row, col):
+        dot_x, dot_y = dot[1], dot[0]
+        dst_x, dst_y = max(0, row * PX_BETWEEN - 1), max(0, col * PX_BETWEEN - 1)
+        return f'{{"src": [{dot_x}, {dot_y}], "dst": [{dst_x}, {dst_y}]}}'
+
+    dots = [dots[i:i + N_COLS] for i in range(0, len(dots), N_COLS)]
+    lines = [get_line(dot, i, j) for i, row in enumerate(dots) for j, dot in enumerate(row)]
+
     with open(filename, 'w') as output:
-        for row in dots:
-            for dot in row:
-                output.write(
-                    '{"src": [%d, %d], "dst": [%d, %d]},' % (dot[1], dot[0], max(0, r * 100 - 1), max(0, c * 100 - 1)))
+        output.writelines(",\n".join(lines))
 
 
-def detect_dots(filename: str):
-    name, ext = filename.split('.')
+def find_contour_centers(contours: list):
+    moments = [cv2.moments(contour) for contour in contours]
+    return [(M["m10"] / M["m00"], M["m01"] / M["m00"]) for M in moments]
 
-    img = cv2.imread(filename)
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-    _, threshed = cv2.threshold(blurred, 100, 255, cv2.THRESH_TOZERO)
-    cv2.imwrite(f'{name}_threshed.{ext}', threshed)
-
-    contours = cv2.findContours(threshed, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
-    print('All found contours count:', len(contours))
-
-    contours = [contour for contour in contours if 20 < cv2.contourArea(contour) < 170]
-    print('Threshed contours count:', len(contours))
+def get_anchor_points():
+    pass
 
     # template = cv2.imread('target.jpg',0)
     # w, h = template.shape[::-1]
@@ -73,7 +83,6 @@ def detect_dots(filename: str):
     #     elif pt[0]>(W/2) and pt[1]<(H/2) :
     #         aDots[3].append(pt)
 
-
     # for aDot in aDots:
     #     mean = list(aDot[0])
     #     for c in aDot[1:]:
@@ -86,17 +95,30 @@ def detect_dots(filename: str):
 
     # cv2.imwrite('res.jpg',img)
 
-    dots = []
 
-    # cv2.drawContours(img, contours, -1, (255, 0, 0), 6)
-    for i in range(len(contours)):
-        M = cv2.moments(contours[i])
-        cX = round(M["m10"] / M["m00"])
-        cY = round(M["m01"] / M["m00"])
-        dots.append([cX, cY])
+def detect_dots(filename: str):
+    name, ext = filename.split('.')
 
-    dots = get_dots_matrix(dots)
-    cv2.imwrite(f'{name}_circles.{ext}', with_circles_drawn(img, dots))
+    img = cv2.imread(filename)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    cv2.imwrite(f'{name}_01_blurred.{ext}', blurred)
+
+    _, threshed = cv2.threshold(blurred, 100, 255, cv2.THRESH_TOZERO)
+    cv2.imwrite(f'{name}_02_threshed.{ext}', threshed)
+
+    contours = cv2.findContours(threshed, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
+    print('All contours count:', len(contours))
+    cv2.imwrite(f'{name}_03_contours_all.{ext}', with_contours_drawn(img, contours))
+
+    contours = [contour for contour in contours if 20 < cv2.contourArea(contour) < 170]
+    print('Threshed contours count:', len(contours))
+    cv2.imwrite(f'{name}_04_contours_filtered.{ext}', with_contours_drawn(img, contours))
+
+    dots = find_contour_centers(contours)
+    dots = sort_dots(dots)
+    cv2.imwrite(f'{name}_05_dots.{ext}', with_circles_drawn(img, dots))
 
     write_dots_json(f'{name}.json', dots)
 
